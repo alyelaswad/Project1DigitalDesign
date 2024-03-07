@@ -6,4 +6,4 @@ G0,AND2,w1,A,B
 G1,NOT,w2,A 
 G2,OR2,w3,w2,w1
 G3,AND2,w4,B,w2
-G4,OR2,Y,w3,w4
+G4,NOR2,Y,w3,w4
