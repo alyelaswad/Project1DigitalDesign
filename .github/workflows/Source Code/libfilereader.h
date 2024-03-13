@@ -16,7 +16,7 @@ struct gate {
     string name;
     int delayofgate;
     int inputnums;
-    vector<char> inputs;
+    vector<bool> inputs;
     bool output;
     bool AND(bool A, bool B) {
         return A && B;
