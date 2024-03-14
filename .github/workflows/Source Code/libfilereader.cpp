@@ -5,15 +5,15 @@
 #define LIFEREADER_CPP
 using  namespace std;
 
-vector<gate> libfilereader::get_gatesdict()
+vector<gate> libfilereader::get_gatesdict() // getter for the gatesdict
 {
     return gatesdict;
 }
-void libfilereader::accesslibfile(std::string pathname)
+void libfilereader::accesslibfile(std::string pathname) // Reads the .lib file
 {
     ifstream inFile(pathname);
     if(!inFile.is_open())
-    cout <<"jdskaf";
+    cout <<"File not found";
     string line;
     while (getline(inFile, line)) {
         stringstream ss(line);
@@ -30,7 +30,7 @@ void libfilereader::accesslibfile(std::string pathname)
 
     inFile.close();
 }
-void libfilereader::readvectorgate() {
+void libfilereader::readvectorgate() { // prints the content of the gates in gatesdict
     for (const auto& gate : gatesdict) {
         cout << "Gate Name: " << gate.name << endl;
         cout << "Delay: " << gate.delayofgate << endl;
