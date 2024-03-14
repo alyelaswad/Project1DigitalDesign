@@ -12,7 +12,7 @@ struct gate {
     string expression;
     int delayofgate;
     LogicGates g;
-    bool output(bool A, bool B) {
+    bool output(bool A, bool B) {//fucntion to return the ouptut gate 
         if (name == "NAND2") {
             return g.NAND(A, B);
         }
@@ -40,9 +40,9 @@ private:
     vector<gate> gatesdict;
 
 public:
-  void accesslibfile(string);
-  void readvectorgate();
-  bool getouput(bool , bool , string);
-  bool getouput(bool, string);
+  void accesslibfile(string);// acess and read lib file and record the info in gate dictionary vector
+  void readvectorgate();// output gate dictionary vector
+  bool getouput(bool , bool , string);// get output of required gates searched using the parameter of gate of two inputs
+  bool getouput(bool, string);// same as above but one input
 };
 

@@ -7,21 +7,21 @@
 using namespace std;
 // #include "LogicGates.h" 
 struct gate {
-    std::string name;
-    int delayofgate;
-    std::string expression;
-    int inputnums;
-    vector <string> inputs;
-    std::string output;
-    std::string type; 
+    std::string name; // name of the gate ; for example G0,G1,G2,.....
+    int delayofgate; // Delay of the gate
+    std::string expression; // The expression that defines the function of the gate
+    int inputnums; // the number of inputs the gate receives
+    vector <string> inputs; // Vector of the names of the inputs
+    std::string output; // The name of the output 
+    std::string type; // Type of the gate ; for example: NAND2,AND2,NOT1,..... 
 };
 
 class libfilereader {
 private:
-    vector<gate> gatesdict;
+    vector<gate> gatesdict; // Vector of the gates  
 
 public:
-   void accesslibfile(std::string pathname);
-   void readvectorgate();
-   vector<gate> get_gatesdict();
+   void accesslibfile(std::string pathname); // Function that reads the .lib file
+   void readvectorgate(); // A function that prints the gates vector
+   vector<gate> get_gatesdict(); // A getter for the gatesdict
 };
