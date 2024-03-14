@@ -4,9 +4,6 @@
 #include <string>
 #include <sstream>
 #include <fstream>
-#include <stack>
-#include <map>
-#include <cstdarg>
 #include "LogicGates.h" 
 using namespace std;
 struct gate {
