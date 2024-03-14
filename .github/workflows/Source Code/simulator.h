@@ -42,7 +42,6 @@ private:
 public:
   void accesslibfile(string);
   void readvectorgate();
-  bool accandcompsimfile(string,string);
   bool getouput(bool , bool , string);
   bool getouput(bool, string);
 };
