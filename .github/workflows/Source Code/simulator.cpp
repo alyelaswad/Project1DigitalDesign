@@ -61,29 +61,4 @@ void simulator::readvectorgate() {
         cout << "Expression: " << gate.expression << endl;
     }
 }
-bool simulator::accandcompsimfile(string pathname1, string pathname2) {
-    ifstream inFile1(pathname1), inFile2(pathname2);
-    string line1, line2;
-    vector<string> contentfile1, contentfile2;
-
-    while (getline(inFile1, line1)) {
-        contentfile1.push_back(line1);
-    }
-
-    while (getline(inFile2, line2)) {
-        contentfile2.push_back(line2);
-    }
-
-    if (contentfile1.size() != contentfile2.size()) {
-        return false;
-    }
-
-    for (int i = 0; i < contentfile1.size(); ++i) {
-        if (contentfile1[i] != contentfile2[i]) {
-            return false;
-        }
-    }
-
-    return true;
-}
 
