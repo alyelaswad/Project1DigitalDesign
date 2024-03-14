@@ -3,15 +3,15 @@
 class LogicGates
 {
 public:
-    bool AND(bool, bool);
+    bool AND(bool, bool); // Computes the 2 input AND gate
 
-    bool OR(bool, bool);
+    bool OR(bool, bool); // Computes the 2 input OR gate
 
-    bool NOT(bool);
+    bool NOT(bool); // Computes the NOT gate
 
-    bool NAND(bool, bool);
+    bool NAND(bool, bool); // Computes the two input NAND gate
 
-    bool NOR(bool, bool);
+    bool NOR(bool, bool); // Computes the two input NOR gate
 };
 
 #endif
