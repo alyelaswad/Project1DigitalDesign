@@ -4,6 +4,7 @@ using namespace std;
 void libfilereader::accesslibfile( string pathname) {
     ifstream inFile;
     inFile.open(pathname);
+    int k = 0;
     string line;
     while (getline(inFile, line))
     {
@@ -19,20 +20,16 @@ void libfilereader::accesslibfile( string pathname) {
         getline(ss, inputnums, ',');
         getline(ss, expression, ',');
         ss >> delay;
-        gate g = { name, stoi(inputnums), expression, stoi(delay) };
+       
+        gate g = { name, stoi(inputnums),stoi(delay) };
         gatesdict.push_back(g);
     }
 }
-/*void libfilereader::readvectorgate() {
+void libfilereader::readvectorgate() {
     for (const auto& gate : gatesdict) {
         cout << "Gate Name: " << gate.name << endl;
         cout << "Delay: " << gate.delayofgate << endl;
         cout << "Number of Inputs: " << gate.inputnums << endl;
-        cout << "Inputs: ";
-        for (const auto& input : gate.expression) {
-            cout << input;
-        }
-        cout << endl << endl;
     }
 }
-*/
+
