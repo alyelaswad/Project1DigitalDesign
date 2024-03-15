@@ -7,13 +7,13 @@
 using namespace std;
 // #include "LogicGates.h" 
 struct gate {
-    std::string name; // name of the gate ; for example G0,G1,G2,.....
+    std::string type; // Type of the gate ; for example: NAND2,AND2,NOT1,..... 
     int delayofgate; // Delay of the gate
     std::string expression; // The expression that defines the function of the gate
     int inputnums; // the number of inputs the gate receives
     vector <string> inputs; // Vector of the names of the inputs
     std::string output; // The name of the output 
-    std::string type; // Type of the gate ; for example: NAND2,AND2,NOT1,..... 
+    std::string name; // name of the gate ; for example G0,G1,G2,..... 
 };
 
 class libfilereader {
