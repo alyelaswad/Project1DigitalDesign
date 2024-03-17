@@ -80,7 +80,9 @@ void CircuitReader::accessCirFile(std::string pathname)
         if (line == "INPUTS:")
             continue;
         else
-            inputs.push_back(0); // Storing the inputs
+        {
+            inputs.push_back(line); // Storing the inputs
+        }
     }
 
     while (getline(cir_file, line))
@@ -119,7 +121,6 @@ void CircuitReader::accessCirFile(std::string pathname)
         {
             string name1;
             getline(ss, name1, ',');
-            cout << name1;
             gate_i.inputs.push_back(name1); // Reading the inputs
         }
         cir_gates.push_back(gate_i);
@@ -152,4 +153,38 @@ bool CircuitReader::getOutput(bool A, const string &gatetype)
     }
 
     return found_gate->outputfc(A, A);
+}
+void CircuitReader::accessStimFile(string pathname)
+{
+    ifstream inFile;
+    inFile.open(pathname);
+    for (int i = 0; i < inputs.size(); i++)
+    {
+        string c = inputs[i];
+        dataVector.push_back({0, c, 0});
+    }
+
+    string line;
+    while (getline(inFile, line))
+    {
+        stringstream ss(line);
+        string parcer;
+
+        Data temp;
+
+        getline(ss, parcer, ',');
+        temp.timestamp = stoi(parcer);
+
+        getline(ss, parcer, ',');
+        temp.variable = parcer;
+
+        getline(ss, parcer, ',');
+        temp.value = stoi(parcer);
+
+        dataVector.push_back(temp);
+    }
+    for (int i = 0; i < dataVector.size(); i++)
+    {
+        cout << dataVector[i].timestamp << "\t" << dataVector[i].variable << "\t" << dataVector[i].value << "\n";
+    }
 }

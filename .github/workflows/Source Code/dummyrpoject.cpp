@@ -7,9 +7,7 @@ int main()
     circuit.accessLibFile("DD1.lib");
     // circuit.readvectorgate();
     circuit.accessCirFile("circ2.cir");
-
-    cout << endl
-         << circuit.getOutput(1, 1, "AND2");
+    circuit.accessStimFile("circ_3Var.stim");
 
     return 0;
 }

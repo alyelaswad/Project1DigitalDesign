@@ -20,18 +20,28 @@ struct gate
 
     bool outputfc(bool A, bool B);
 };
+struct Data // stores data taken from stim file
+{
+    int timestamp;
+    string variable;
+    bool value;
+};
 
 class CircuitReader
 {
 private:
     vector<gate> gatesdict;
     vector<gate> cir_gates;
-    vector<bool> inputs;
+    vector<Data> dataVector;
+    vector<string> inputs;
 
 public:
     void accessLibFile(const string &pathname);             // Function to read the .lib file
     void accessCirFile(string pathname);                    // Function to read the .cir file
+    void accessStimFile(string pathname);                   // Function to read the .stim file
     bool getOutput(bool A, bool B, const string &gatetype); // Function to get output of gates with 2 inputs
     bool getOutput(bool A, const string &gatetype);         // Function to get output of gates with 1 input
+    void SimulateProgram(string OutputPath);
+
     void readvectorgate();
 };
