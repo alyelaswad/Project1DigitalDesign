@@ -1,4 +1,6 @@
 #include "cir_reader.h"
+#include <algorithm> 
+#include <vector> 
 bool gate::outputfc(bool A, bool B)
 {
     // function to return the output gate
@@ -125,13 +127,12 @@ void CircuitReader::accessCirFile(std::string pathname)
         }
         cir_gates.push_back(gate_i);
     }
-
     cir_file.close(); // Closing the .cir file
 }
 
 bool CircuitReader::getOutput(bool A, bool B, const string &gatetype)
 {
-    auto found_gate = find_if(gatesdict.begin(), gatesdict.end(), [&](const gate &g)
+    auto found_gate = std::find_if(gatesdict.begin(), gatesdict.end(), [&](const gate &g)
                               { return g.type == gatetype; });
     if (found_gate == gatesdict.end())
     {
@@ -144,7 +145,7 @@ bool CircuitReader::getOutput(bool A, bool B, const string &gatetype)
 
 bool CircuitReader::getOutput(bool A, const string &gatetype)
 {
-    auto found_gate = find_if(gatesdict.begin(), gatesdict.end(), [&](const gate &g)
+    auto found_gate = std::find_if(gatesdict.begin(), gatesdict.end(), [&](const gate &g)
                               { return g.type == gatetype; });
     if (found_gate == gatesdict.end())
     {
@@ -158,11 +159,11 @@ void CircuitReader::accessStimFile(string pathname)
 {
     ifstream inFile;
     inFile.open(pathname);
-    for (int i = 0; i < inputs.size(); i++)
-    {
-        string c = inputs[i];
-        dataVector.push_back({0, c, 0});
-    }
+    // for (int i = 0; i < inputs.size(); i++)
+    // {
+    //     string c = inputs[i];
+    //     dataVector.push_back({0, c, 0});
+    // }
 
     string line;
     while (getline(inFile, line))
@@ -187,4 +188,49 @@ void CircuitReader::accessStimFile(string pathname)
     {
         cout << dataVector[i].timestamp << "\t" << dataVector[i].variable << "\t" << dataVector[i].value << "\n";
     }
+}
+void CircuitReader::compute_circuit()
+{
+    for(int i=0;i<cir_gates.size();i++)
+    {
+        // cir_gates[i].inputs
+        // dataVector
+        // outputfc()
+        // for(int j=0;j<cir_gates.size();j++)
+        // {
+        //     for(int z=0;z<cir_gates[j].inputnums;z++)
+        //     {
+        //         if(cir_gates[j].inputs[z] == i+'A')
+        //             outputfc(current_values[i],)
+        //     }
+        // }
+    }   
+}
+void CircuitReader::SimulateProgram(string OutputPath)
+{
+    ofstream outputfile(OutputPath);
+    if(!outputfile.is_open())
+    {
+        cout << "Could not open output file" <<endl;
+        return;
+    }
+    vector <Data> outputs;
+    for(int i=0;i<inputs.size();i++)
+    {
+        current_values.push_back(0);
+    }
+    for(int i=0;i<dataVector.size();i++)
+    {
+        char c;
+        c = dataVector[i].variable[0];
+        current_values[int(c)-65]=dataVector[i].value; 
+        
+        // compute_circuit();
+    }
+    // for(int i=0;i<cir_gates.size();i++)
+    // {
+    //     if(cir_gates[i].type=="NOT")
+    //     outputfc(,cir_gates[i].type);
+
+    // }
 }
