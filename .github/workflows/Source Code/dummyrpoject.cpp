@@ -8,6 +8,7 @@ int main()
     // circuit.readvectorgate();
     circuit.accessCirFile("circ5.cir");
     circuit.accessStimFile("circ_2Var.stim");
+
     circuit.SimulateProgram();
     return 0;
 }

@@ -203,10 +203,10 @@ void CircuitReader::accessStimFile(string pathname)
         cout << dataVector[i].timestamp << "\t" << dataVector[i].variable << "\t" << dataVector[i].value << "\n";
     }
 }
-void CircuitReader::compute_circuit()
+void CircuitReader::compute_circuit(int timestamp)
 {
     map<string, bool> intermediate_values;
-
+    cout << timestamp << ",";
     // Traverse each gate in the circuit
     for (int i = 0; i < cir_gates.size(); i++)
     {
@@ -246,9 +246,8 @@ void CircuitReader::compute_circuit()
 
         // Store the output value for the gate
         intermediate_values[current_gate.output] = output_value;
-
+        cout << current_gate.output << "," << (output_value ? "1" : "0") << endl;
         // Output the gate's output
-        cout << dataVector[i].timestamp << "," << current_gate.output << "," << (output_value ? "1" : "0") << endl;
     }
 }
 void CircuitReader::SimulateProgram()
@@ -270,7 +269,7 @@ void CircuitReader::SimulateProgram()
         c = dataVector[i].variable[0];
         current_values[int(c) - 65] = dataVector[i].value;
 
-        compute_circuit();
+        compute_circuit(dataVector[i].timestamp);
         cout << "End of Event" << i + 1 << endl
              << endl;
     }

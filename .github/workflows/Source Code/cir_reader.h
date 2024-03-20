@@ -41,12 +41,13 @@ class CircuitReader
 private:
     vector<gate> gatesdict;
 
-    vector<Data> dataVector;
     vector<string> inputs;
 
     vector<bool> current_values;
+    vector<IntermediateValue> intermediateValues;
 
 public:
+    vector<Data> dataVector;
     vector<gate> cir_gates;
     void accessLibFile(const string &pathname);             // Function to read the .lib file
     void accessCirFile(string pathname);                    // Function to read the .cir file
@@ -54,6 +55,6 @@ public:
     bool getOutput(bool A, bool B, const string &gatetype); // Function to get output of gates with 2 inputs
     bool getOutput(bool A, const string &gatetype);         // Function to get output of gates with 1 input
     void SimulateProgram();
-    void compute_circuit();
+    void compute_circuit(int timestamp);
     void readvectorgate();
 };
