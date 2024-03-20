@@ -40,12 +40,9 @@ class CircuitReader
 {
 private:
     vector<gate> gatesdict;
-
     vector<string> inputs;
-
     vector<bool> current_values;
-    vector<IntermediateValue> intermediateValues;
-
+    vector<IntermediateValue> intermediateValues; 
 public:
     vector<Data> dataVector;
     vector<gate> cir_gates;
