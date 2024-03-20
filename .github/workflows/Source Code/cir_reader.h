@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <map>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -42,7 +43,9 @@ private:
     vector<gate> gatesdict;
     vector<string> inputs;
     vector<bool> current_values;
-    vector<IntermediateValue> intermediateValues; 
+    vector<IntermediateValue> intermediateValues;
+    map<string, bool> previous_values;
+
 public:
     vector<Data> dataVector;
     vector<gate> cir_gates;

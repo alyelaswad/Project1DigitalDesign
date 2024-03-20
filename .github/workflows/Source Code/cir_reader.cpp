@@ -3,7 +3,7 @@
 #include <vector>
 #include <map>
 #include <set>
-bool compare_timestamp(IntermediateValue& a, IntermediateValue& b) 
+bool compare_timestamp(IntermediateValue &a, IntermediateValue &b)
 {
     return a.timestamp < b.timestamp;
 }
@@ -210,8 +210,8 @@ void CircuitReader::accessStimFile(string pathname)
 }
 void CircuitReader::compute_circuit(int timestamp)
 {
+    // Map to store intermediate values and their previous values
     map<string, bool> intermediate_values;
-    // set<pair<string,bool>> intermediate_values2;
     // Traverse each gate in the circuit
     for (int i = 0; i < cir_gates.size(); i++)
     {
@@ -249,10 +249,16 @@ void CircuitReader::compute_circuit(int timestamp)
         output_value = (current_gate.inputnums == 1) ? getOutput(gate_inputs[0], current_gate.type)
                                                      : getOutput(gate_inputs[0], gate_inputs[1], current_gate.type);
 
-        // Store the output value for the gate
+        auto it = previous_values.find(current_gate.output);
+        if (it != previous_values.end() && it->second == output_value)
+        {
+            continue;
+        }
+
+        // Record the event since the value has changed
+        intermediateValues.push_back(IntermediateValue(timestamp + current_gate.delayofgate, current_gate.output, output_value));
         intermediate_values[current_gate.output] = output_value;
-        intermediateValues.push_back(IntermediateValue(timestamp+current_gate.delayofgate,current_gate.output,output_value));
-        // Output the gate's output
+        previous_values[current_gate.output] = output_value;
     }
 }
 void CircuitReader::SimulateProgram()
@@ -264,14 +270,14 @@ void CircuitReader::SimulateProgram()
     //     return;
     // }
     string input("");
-    for(int i=0;i<inputs.size();i++)
+    for (int i = 0; i < inputs.size(); i++)
     {
-        input+=inputs[i][0];
-        intermediateValues.push_back(IntermediateValue(0,input,0));  
-        input="";  
+        input += inputs[i][0];
+        intermediateValues.push_back(IntermediateValue(0, input, 0));
+        input = "";
     }
-    for(int i=0;i<dataVector.size();i++)
-    intermediateValues.push_back(IntermediateValue(dataVector[i].timestamp,dataVector[i].variable,dataVector[i].value));
+    for (int i = 0; i < dataVector.size(); i++)
+        intermediateValues.push_back(IntermediateValue(dataVector[i].timestamp, dataVector[i].variable, dataVector[i].value));
 
     vector<Data> outputs;
     for (int i = 0; i < inputs.size(); i++)
@@ -288,10 +294,10 @@ void CircuitReader::SimulateProgram()
         // cout << "End of Event" << i + 1 << endl
         //      << endl;
     }
-    std::sort(intermediateValues.begin(), intermediateValues.end(),compare_timestamp);
-    for(int i=0;i<intermediateValues.size();i++)
-    cout << intermediateValues[i].timestamp << "," <<intermediateValues [i].variable << "," 
-    << (intermediateValues[i].value ? "1" : "0") <<endl;  
+    std::sort(intermediateValues.begin(), intermediateValues.end(), compare_timestamp);
+    for (int i = 0; i < intermediateValues.size(); i++)
+        cout << intermediateValues[i].timestamp << "," << intermediateValues[i].variable << ","
+             << (intermediateValues[i].value ? "1" : "0") << endl;
     // for (int i = 0; i < cir_gates.size(); i++)
     // {
     //     if (cir_gates[i].type == "NOT")
