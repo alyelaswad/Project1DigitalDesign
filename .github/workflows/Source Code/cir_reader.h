@@ -27,22 +27,33 @@ struct Data // stores data taken from stim file
     bool value;
 };
 
+struct IntermediateValue
+{
+    int timestamp;
+    string variable;
+    bool value;
+
+    IntermediateValue(int ts, const string &var, bool val) : timestamp(ts), variable(var), value(val) {}
+};
+
 class CircuitReader
 {
 private:
     vector<gate> gatesdict;
-    vector<gate> cir_gates;
+
     vector<Data> dataVector;
     vector<string> inputs;
-    vector <bool> current_values;
+
+    vector<bool> current_values;
 
 public:
+    vector<gate> cir_gates;
     void accessLibFile(const string &pathname);             // Function to read the .lib file
     void accessCirFile(string pathname);                    // Function to read the .cir file
     void accessStimFile(string pathname);                   // Function to read the .stim file
     bool getOutput(bool A, bool B, const string &gatetype); // Function to get output of gates with 2 inputs
     bool getOutput(bool A, const string &gatetype);         // Function to get output of gates with 1 input
-    void SimulateProgram(string OutputPath);
+    void SimulateProgram();
     void compute_circuit();
     void readvectorgate();
 };

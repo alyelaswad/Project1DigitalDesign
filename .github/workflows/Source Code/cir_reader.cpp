@@ -1,6 +1,7 @@
 #include "cir_reader.h"
-#include <algorithm> 
-#include <vector> 
+#include <algorithm>
+#include <vector>
+#include <map>
 bool gate::outputfc(bool A, bool B)
 {
     // function to return the output gate
@@ -132,28 +133,41 @@ void CircuitReader::accessCirFile(std::string pathname)
 
 bool CircuitReader::getOutput(bool A, bool B, const string &gatetype)
 {
-    auto found_gate = std::find_if(gatesdict.begin(), gatesdict.end(), [&](const gate &g)
-                              { return g.type == gatetype; });
-    if (found_gate == gatesdict.end())
+    int foundat = -9999;
+    for (int i = 0; i < gatesdict.size(); i++)
     {
-        cout << "Gate not found" << endl;
-        return false;
+        if (gatesdict[i].type == gatetype)
+        {
+            foundat = i;
+        }
     }
-
-    return found_gate->outputfc(A, B);
+    if (foundat == -9999)
+    {
+        cout << "Gate not found";
+        return 0;
+    }
+    else
+        return gatesdict[foundat].outputfc(A, B);
+    ;
 }
 
 bool CircuitReader::getOutput(bool A, const string &gatetype)
 {
-    auto found_gate = std::find_if(gatesdict.begin(), gatesdict.end(), [&](const gate &g)
-                              { return g.type == gatetype; });
-    if (found_gate == gatesdict.end())
+    int foundat = -9999;
+    for (int i = 0; i < gatesdict.size(); i++)
     {
-        cout << "Gate not found" << endl;
-        return false;
+        if (gatesdict[i].type == gatetype)
+        {
+            foundat = i;
+        }
     }
-
-    return found_gate->outputfc(A, A);
+    if (foundat == -9999)
+    {
+        cout << "Gate not found";
+        return 0;
+    }
+    else
+        return gatesdict[foundat].outputfc(A, A);
 }
 void CircuitReader::accessStimFile(string pathname)
 {
@@ -191,46 +205,78 @@ void CircuitReader::accessStimFile(string pathname)
 }
 void CircuitReader::compute_circuit()
 {
-    for(int i=0;i<cir_gates.size();i++)
+    map<string, bool> intermediate_values;
+
+    // Traverse each gate in the circuit
+    for (int i = 0; i < cir_gates.size(); i++)
     {
-        // cir_gates[i].inputs
-        // dataVector
-        // outputfc()
-        // for(int j=0;j<cir_gates.size();j++)
-        // {
-        //     for(int z=0;z<cir_gates[j].inputnums;z++)
-        //     {
-        //         if(cir_gates[j].inputs[z] == i+'A')
-        //             outputfc(current_values[i],)
-        //     }
-        // }
-    }   
-}
-void CircuitReader::SimulateProgram(string OutputPath)
-{
-    ofstream outputfile(OutputPath);
-    if(!outputfile.is_open())
-    {
-        cout << "Could not open output file" <<endl;
-        return;
+        bool output_value;
+        gate &current_gate = cir_gates[i];
+
+        // Vector to store inputs for the current gate
+        vector<bool> gate_inputs;
+
+        // Process inputs for the current gate
+        for (int j = 0; j < current_gate.inputnums; j++)
+        {
+            string input_name = current_gate.inputs[j];
+
+            // Check if input value is already computed and stored in intermediate_values
+            auto it = intermediate_values.find(input_name);
+            bool input_value;
+            if (it != intermediate_values.end())
+            {
+                input_value = it->second;
+            }
+            else
+            {
+                // Find the corresponding value from current_values
+                char input_variable = input_name[0];
+                int input_index = input_variable - 'A'; // Assuming inputs are labeled A, B, C, ...
+                input_value = current_values[input_index];
+            }
+
+            // Store the input value for the gate
+            gate_inputs.push_back(input_value);
+        }
+
+        // Compute the output of the gate based on its inputs
+        output_value = (current_gate.inputnums == 1) ? getOutput(gate_inputs[0], current_gate.type)
+                                                     : getOutput(gate_inputs[0], gate_inputs[1], current_gate.type);
+
+        // Store the output value for the gate
+        intermediate_values[current_gate.output] = output_value;
+
+        // Output the gate's output
+        cout << dataVector[i].timestamp << "," << current_gate.output << "," << (output_value ? "1" : "0") << endl;
     }
-    vector <Data> outputs;
-    for(int i=0;i<inputs.size();i++)
+}
+void CircuitReader::SimulateProgram()
+{
+    // ofstream outputfile(OutputPath);
+    // if (!outputfile.is_open())
+    // {
+    //     cout << "Could not open output file" << endl;
+    //     return;
+    // }
+    vector<Data> outputs;
+    for (int i = 0; i < inputs.size(); i++)
     {
         current_values.push_back(0);
     }
-    for(int i=0;i<dataVector.size();i++)
+    for (int i = 0; i < dataVector.size(); i++)
     {
         char c;
         c = dataVector[i].variable[0];
-        current_values[int(c)-65]=dataVector[i].value; 
-        
-        // compute_circuit();
-    }
-    // for(int i=0;i<cir_gates.size();i++)
-    // {
-    //     if(cir_gates[i].type=="NOT")
-    //     outputfc(,cir_gates[i].type);
+        current_values[int(c) - 65] = dataVector[i].value;
 
+        compute_circuit();
+        cout << "End of Event" << i + 1 << endl
+             << endl;
+    }
+    // for (int i = 0; i < cir_gates.size(); i++)
+    // {
+    //     if (cir_gates[i].type == "NOT")
+    //         outputfc(, cir_gates[i].type);
     // }
 }
