@@ -1,5 +1,4 @@
 #include "cir_reader.h"
-#include "cir_reader.h"
 #include"LogicGates.h"
 #include <algorithm>
 #include <vector>
