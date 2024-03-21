@@ -19,7 +19,7 @@ struct gate
     LogicGates g;
     string output;
 
-    bool outputfc(bool A, bool B);
+    bool outputfc(vector<bool> inputss);
 };
 struct Data // stores data taken from stim file
 {
@@ -34,7 +34,7 @@ struct IntermediateValue
     string variable;
     bool value;
 
-    IntermediateValue(int ts, const string &var, bool val) : timestamp(ts), variable(var), value(val) {}
+    IntermediateValue(int ts, const string& var, bool val) : timestamp(ts), variable(var), value(val) {}
 };
 
 class CircuitReader
@@ -49,12 +49,12 @@ private:
 public:
     vector<Data> dataVector;
     vector<gate> cir_gates;
-    void accessLibFile(const string &pathname);             // Function to read the .lib file
+    void accessLibFile(const string& pathname);             // Function to read the .lib file
     void accessCirFile(string pathname);                    // Function to read the .cir file
     void accessStimFile(string pathname);                   // Function to read the .stim file
-    bool getOutput(bool A, bool B, const string &gatetype); // Function to get output of gates with 2 inputs
-    bool getOutput(bool A, const string &gatetype);         // Function to get output of gates with 1 input
+    bool getOutput(vector<bool> inputs, string gatename); // Function to get output of gates with 2 inputs
     void SimulateProgram();
     void compute_circuit(int timestamp);
     void readvectorgate();
+
 };
