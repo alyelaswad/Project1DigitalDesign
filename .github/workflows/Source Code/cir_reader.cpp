@@ -1,38 +1,75 @@
 #include "cir_reader.h"
+#include "cir_reader.h"
+#include"LogicGates.h"
 #include <algorithm>
 #include <vector>
 #include <map>
 #include <set>
-bool compare_timestamp(IntermediateValue &a, IntermediateValue &b)
+bool compare_timestamp(IntermediateValue& a, IntermediateValue& b)
 {
     return a.timestamp < b.timestamp;
 }
-bool gate::outputfc(bool A, bool B)
-{
-    // function to return the output gate
-    if (type == "NAND2")
-    {
-        return g.NAND(A, B);
+bool gate::outputfc( vector<bool> inputs) {
+
+    if (type == "NAND") {
+        if (inputs.size() < 2) {
+            cout << "NAND gate requires at least 2 inputs" << endl;
+            return false;
+        }
+        bool result = g.AND(inputs[0], inputs[1]);
+        for (int i = 2; i < inputs.size(); ++i) {
+            result = g.AND(result, inputs[i]);
+        }
+        result = g.NOT(result);
+        return result;
     }
-    else if (type == "NOT")
-    {
-        return g.NOT(A);
+    else if (type == "NOT") {
+        if (inputs.size() != 1) {
+            cout << "Invalid number of inputs for NOT gate" << endl;
+            return false;
+        }
+        return g.NOT(inputs[0]);
     }
-    else if (type == "AND2")
-    {
-        return g.AND(A, B);
+    else if (type == "AND") {
+        if (inputs.size() < 2) {
+            cout << "AND gate requires at least 2 inputs" << endl;
+            return false;
+        }
+        bool result = g.AND(inputs[0], inputs[1]);
+        for (size_t i = 2; i < inputs.size(); ++i) {
+            result = g.AND(result, inputs[i]);
+        }
+        return result;
     }
-    else if (type == "OR2")
-    {
-        return g.OR(A, B);
+    else if (type == "OR") {
+        if (inputs.size() < 2) {
+            cout << "OR gate requires at least 2 inputs" << endl;
+            return false;
+        }
+        bool result = g.OR(inputs[0], inputs[1]);
+        for (size_t i = 2; i < inputs.size(); ++i) {
+            result = g.OR(result, inputs[i]);
+        }
+        return result;
     }
-    else if (type == "NOR2")
-    {
-        return g.NOR(A, B);
+    else if (type == "NOR") {
+        if (inputs.size() < 2) {
+            cout << "NOR gate requires at least 2 inputs" << endl;
+            return false;
+        }
+        bool result = g.OR(inputs[0], inputs[1]);
+        for (size_t i = 2; i < inputs.size(); ++i) {
+            result = g.OR(result, inputs[i]);
+        }
+        result = g.NOT(result);
+        return result;
     }
-    return 0;
+    else {
+        cout << "Unknown gate type" << endl;
+        return false;
+    }
 }
-void CircuitReader::accessLibFile(const string &pathname)
+void CircuitReader::accessLibFile(const string& pathname)
 {
     ifstream inFile(pathname);
     if (!inFile.is_open())
@@ -47,10 +84,17 @@ void CircuitReader::accessLibFile(const string &pathname)
         stringstream ss(line);
         string type, expression, delay, inputnums;
         getline(ss, type, ',');
+        for (int i = 0;i < type.length();i++)
+        {
+            if (!isalpha(type[i])) {
+                type.erase(i, 1);
+
+            }
+        }
         getline(ss, inputnums, ',');
         getline(ss, expression, ',');
         ss >> delay;
-        gate g = {type, stoi(inputnums), expression, stoi(delay)};
+        gate g = { type, stoi(inputnums), expression, stoi(delay) };
         gatesdict.push_back(g);
     }
 
@@ -58,18 +102,18 @@ void CircuitReader::accessLibFile(const string &pathname)
 }
 void CircuitReader::readvectorgate()
 { // prints the content of the gates in gatesdict
-    for (const auto &gate : gatesdict)
+    for (const auto& gate : gatesdict)
     {
         cout << "Gate Type: " << gate.type << endl;
         cout << "Delay: " << gate.delayofgate << endl;
         cout << "Number of Inputs: " << gate.inputnums << endl;
         cout << "Inputs: ";
-        for (const auto &input : gate.expression)
+        for (const auto& input : gate.expression)
         {
             cout << input << " ";
         }
         cout << endl
-             << endl;
+            << endl;
     }
 }
 
@@ -102,6 +146,13 @@ void CircuitReader::accessCirFile(std::string pathname)
         std::string name, type;
         getline(ss, name, ',');
         getline(ss, type, ',');
+        for (int i = 0;i < type.length();i++)
+        {
+            if (!isalpha(type[i])) {
+                type.erase(i, 1);
+
+            }
+        }
 
         gate gate_i;
         bool gate_found = false;
@@ -136,43 +187,21 @@ void CircuitReader::accessCirFile(std::string pathname)
     cir_file.close(); // Closing the .cir file
 }
 
-bool CircuitReader::getOutput(bool A, bool B, const string &gatetype)
-{
-    int foundat = -9999;
-    for (int i = 0; i < gatesdict.size(); i++)
-    {
-        if (gatesdict[i].type == gatetype)
-        {
+bool CircuitReader::getOutput(vector<bool> inputs, string gatename) {
+    int foundat = -1;
+    for (size_t i = 0; i < gatesdict.size(); ++i) {
+        if (gatesdict[i].type == gatename) {
             foundat = i;
+            break;
         }
     }
-    if (foundat == -9999)
-    {
-        cout << "Gate not found";
-        return 0;
+    if (foundat == -1) {
+        cout << "Gate not found" << endl;
+        return false;
     }
-    else
-        return gatesdict[foundat].outputfc(A, B);
-    ;
-}
-
-bool CircuitReader::getOutput(bool A, const string &gatetype)
-{
-    int foundat = -9999;
-    for (int i = 0; i < gatesdict.size(); i++)
-    {
-        if (gatesdict[i].type == gatetype)
-        {
-            foundat = i;
-        }
+    else {
+        return gatesdict[foundat].outputfc(inputs);
     }
-    if (foundat == -9999)
-    {
-        cout << "Gate not found";
-        return 0;
-    }
-    else
-        return gatesdict[foundat].outputfc(A, A);
 }
 void CircuitReader::accessStimFile(string pathname)
 {
@@ -216,7 +245,7 @@ void CircuitReader::compute_circuit(int timestamp)
     for (int i = 0; i < cir_gates.size(); i++)
     {
         bool output_value;
-        gate &current_gate = cir_gates[i];
+        gate& current_gate = cir_gates[i];
 
         // Vector to store inputs for the current gate
         vector<bool> gate_inputs;
@@ -246,8 +275,7 @@ void CircuitReader::compute_circuit(int timestamp)
         }
 
         // Compute the output of the gate based on its inputs
-        output_value = (current_gate.inputnums == 1) ? getOutput(gate_inputs[0], current_gate.type)
-                                                     : getOutput(gate_inputs[0], gate_inputs[1], current_gate.type);
+        output_value = getOutput(gate_inputs, current_gate.type);
 
         auto it = previous_values.find(current_gate.output);
         if (it != previous_values.end() && it->second == output_value)
@@ -278,6 +306,7 @@ void CircuitReader::SimulateProgram()
     }
     for (int i = 0; i < dataVector.size(); i++)
         intermediateValues.push_back(IntermediateValue(dataVector[i].timestamp, dataVector[i].variable, dataVector[i].value));
+  
 
     vector<Data> outputs;
     for (int i = 0; i < inputs.size(); i++)
@@ -285,6 +314,8 @@ void CircuitReader::SimulateProgram()
         current_values.push_back(0);
     }
     compute_circuit(0);
+
+  
     for (int i = 0; i < dataVector.size(); i++)
     {
         char c;
@@ -294,13 +325,16 @@ void CircuitReader::SimulateProgram()
         // cout << "End of Event" << i + 1 << endl
         //      << endl;
     }
+  
     std::sort(intermediateValues.begin(), intermediateValues.end(), compare_timestamp);
     for (int i = 0; i < intermediateValues.size(); i++)
         cout << intermediateValues[i].timestamp << "," << intermediateValues[i].variable << ","
-             << (intermediateValues[i].value ? "1" : "0") << endl;
+        << (intermediateValues[i].value ? "1" : "0") << endl;
     // for (int i = 0; i < cir_gates.size(); i++)
     // {
     //     if (cir_gates[i].type == "NOT")
     //         outputfc(, cir_gates[i].type);
     // }
+    
 }
+
