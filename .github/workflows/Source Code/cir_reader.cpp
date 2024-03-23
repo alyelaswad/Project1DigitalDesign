@@ -357,7 +357,4 @@ void CircuitReader::SimulateProgram()
     // }
     
 }
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
