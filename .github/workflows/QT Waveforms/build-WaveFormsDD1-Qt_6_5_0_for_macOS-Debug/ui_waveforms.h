@@ -33,22 +33,24 @@ public:
     {
         if (WaveForms->objectName().isEmpty())
             WaveForms->setObjectName("WaveForms");
-        WaveForms->resize(800, 600);
+        WaveForms->resize(1015, 704);
+        WaveForms->setStyleSheet(QString::fromUtf8("background-color: rgb(0, 0, 0);"));
         centralwidget = new QWidget(WaveForms);
         centralwidget->setObjectName("centralwidget");
         GraphWidget = new QCustomPlot(centralwidget);
         GraphWidget->setObjectName("GraphWidget");
-        GraphWidget->setGeometry(QRect(10, 60, 821, 541));
+        GraphWidget->setGeometry(QRect(30, 60, 981, 591));
         label = new QLabel(centralwidget);
         label->setObjectName("label");
-        label->setGeometry(QRect(250, -10, 171, 81));
+        label->setGeometry(QRect(430, 0, 171, 81));
         QFont font;
         font.setPointSize(29);
         label->setFont(font);
+        label->setStyleSheet(QString::fromUtf8("color: rgb(255, 255, 255);"));
         WaveForms->setCentralWidget(centralwidget);
         menubar = new QMenuBar(WaveForms);
         menubar->setObjectName("menubar");
-        menubar->setGeometry(QRect(0, 0, 800, 24));
+        menubar->setGeometry(QRect(0, 0, 1015, 22));
         WaveForms->setMenuBar(menubar);
         statusbar = new QStatusBar(WaveForms);
         statusbar->setObjectName("statusbar");
