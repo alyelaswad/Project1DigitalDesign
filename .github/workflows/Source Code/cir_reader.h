@@ -15,7 +15,7 @@ struct gate
     int inputnums;          // the number of inputs the gate receives
     std::string expression; // The expression that defines the function of the gate
     int delayofgate;        // Delay of the gate
-    vector<string> inputs;  // Vector of the names of the inputs
+    vector <string> inputs;  // Vector of the names of the inputs
     LogicGates g;
     string output;
 
@@ -40,12 +40,12 @@ struct IntermediateValue
 class CircuitReader
 {
 private:
-    vector<gate> gatesdict;
-    vector<string> inputs;
-    vector<bool> current_values;
-    vector<IntermediateValue> intermediateValues;
-    map<string, bool> previous_values;
-
+    vector <gate> gatesdict;
+    vector <string> inputs;
+    vector <bool> current_values;
+    vector <IntermediateValue> intermediateValues;
+    map <string, bool> previous_values;
+    map <string,int> output_delay; 
 public:
     vector<Data> dataVector;
     vector<gate> cir_gates;

@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <set>
+using namespace std;
 bool compare_timestamp(IntermediateValue& a, IntermediateValue& b)
 {
     return a.timestamp < b.timestamp;
@@ -132,7 +133,7 @@ void CircuitReader::accessCirFile(std::string pathname)
             continue;
         else
         {
-            inputs.push_back(line); // Storing the inputs
+            inputs.push_back(""+line[0]); // Storing the inputs
         }
     }
 
@@ -238,6 +239,7 @@ void CircuitReader::accessStimFile(string pathname)
 }
 void CircuitReader::compute_circuit(int timestamp)
 {
+    int delay_of_outputs; 
     // Map to store intermediate values and their previous values
     map<string, bool> intermediate_values;
     // Traverse each gate in the circuit
@@ -281,9 +283,18 @@ void CircuitReader::compute_circuit(int timestamp)
         {
             continue;
         }
-
+        delay_of_outputs=timestamp + current_gate.delayofgate;
+        output_delay[current_gate.output] = delay_of_outputs;
+        for(int i=0; i<current_gate.inputs.size();i++)
+        {   
+            auto it2 = std::find(inputs.begin(),inputs.end(),current_gate.inputs[i]);
+            if(it2==inputs.end())
+            {
+            delay_of_outputs= delay_of_outputs-timestamp+output_delay[current_gate.output];
+            }
+        }
         // Record the event since the value has changed
-        intermediateValues.push_back(IntermediateValue(timestamp + current_gate.delayofgate, current_gate.output, output_value));
+        intermediateValues.push_back(IntermediateValue(delay_of_outputs, current_gate.output, output_value));
         intermediate_values[current_gate.output] = output_value;
         previous_values[current_gate.output] = output_value;
     }
@@ -329,6 +340,7 @@ void CircuitReader::SimulateProgram()
     for (int i = 0; i < intermediateValues.size(); i++)
         cout << intermediateValues[i].timestamp << "," << intermediateValues[i].variable << ","
         << (intermediateValues[i].value ? "1" : "0") << endl;
+
     // for (int i = 0; i < cir_gates.size(); i++)
     // {
     //     if (cir_gates[i].type == "NOT")
