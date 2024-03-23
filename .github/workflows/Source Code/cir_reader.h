@@ -53,7 +53,7 @@ public:
     void accessCirFile(string pathname);                    // Function to read the .cir file
     void accessStimFile(string pathname);                   // Function to read the .stim file
     bool getOutput(vector<bool> inputs, string gatename); // Function to get output of gates with 2 inputs
-    void SimulateProgram();
+    void SimulateProgram(string pathname);
     void compute_circuit(int timestamp);
     void readvectorgate();
 

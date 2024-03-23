@@ -8,6 +8,6 @@ int main()
     circuit.accessCirFile("circ5.cir");
     circuit.accessStimFile("circ_2Var.stim");
 
-    circuit.SimulateProgram();
+    circuit.SimulateProgram("simulation.sim");
     return 0;
 }
