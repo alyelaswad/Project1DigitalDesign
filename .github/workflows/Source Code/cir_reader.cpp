@@ -23,46 +23,66 @@ bool evalauteexpression(string express)
       stack<char> operators;
       stack<bool> operands;
       LogicGates G;
-       for (char ch : express) {
-        if (ch == '(' || ch == '&' || ch == '|' || ch == '~') {
-            while (!operators.empty() && precedence(operators.top()) >= precedence(ch)) {
+       for (char ch : express) 
+       {
+        if (ch == '(' || ch == '&' || ch == '|' || ch == '~') // process cases where ch is '(' , '&' , '|' and '~'
+        {
+            while (!operators.empty() && precedence(operators.top()) >= precedence(ch)) 
+            {
                 char op = operators.top();
                 operators.pop();
-                if (op == '~') {
+                if (op == '~') // process case where op is '~'
+                {
                     bool operand = operands.top();
                     operands.pop();
                     operands.push(G.NOT(operand)); // Perform NOT operation
-                } else {
+                } 
+                else 
+                {
                     bool operand2 = operands.top();
                     operands.pop();
                     bool operand1 = operands.top();
                     operands.pop();
-                    if (op == '&') {
+                    if (op == '&') // process case where op is '&' 
+                    {
                         operands.push(G.AND(operand1, operand2));
-                    } else if (op == '|') {
+                    } 
+                    else if (op == '|') // process case where op is '|' 
+                    {
                         operands.push(G.OR(operand1, operand2));
                     }
                 }
             }
             operators.push(ch);
-        } else if (ch == '0' || ch == '1') {
+        } 
+        else if (ch == '0' || ch == '1') // process case where ch is 0 or 1 
+        {
             operands.push(ch - '0');
-        } else if (ch == ')') {
-            while (!operators.empty() && operators.top() != '(') {
+        } 
+        else if (ch == ')') // process case where ch is ')' 
+        {
+            while (!operators.empty() && operators.top() != '(') 
+            {
                 char op = operators.top();
                 operators.pop();
-                if (op == '~') {
+                if (op == '~') // process case where op is '~'
+                {
                     bool operand = operands.top();
                     operands.pop();
                     operands.push(G.NOT(operand)); // Perform NOT operation
-                } else {
+                } 
+                else 
+                {
                     bool operand2 = operands.top();
                     operands.pop();
                     bool operand1 = operands.top();
                     operands.pop();
-                    if (op == '&') {
+                    if (op == '&') // process case where op is '&'
+                    {
                         operands.push(G.AND(operand1, operand2));
-                    } else if (op == '|') {
+                    } 
+                    else if (op == '|') // process case where op is '|'
+                    {
                         operands.push(G.OR(operand1, operand2));
                     }
                 }
