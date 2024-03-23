@@ -20,7 +20,7 @@ int precedence(char op) {
 } 
 bool evalauteexpression(string express)
     {
-     stack<char> operators;
+      stack<char> operators;
       stack<bool> operands;
       LogicGates G;
        for (char ch : express) {
@@ -106,22 +106,20 @@ void CircuitReader::accessLibFile(const string &pathname)
 }
     bool gate::outputfc(vector<bool> inputs, string type, vector<gate> gatesdict) {
     for (int i = 0; i < gatesdict.size(); i++) {
-        if (gatesdict[i].type == type) {
-            string expression = gatesdict[i].expression;
-
-            // Replace placeholders with input values
+        if (gatesdict[i].type == type) {// finds where the type in gatesdict
+            string expression = gatesdict[i].expression;// assigns expression at index i to expression 
             for (int j = 0; j < inputs.size(); j++) {
                 string placeholder = "i" + to_string(j + 1);
                 size_t pos = expression.find(placeholder);
-                while (pos != string::npos) {
+                while (pos != string::npos) {//replaces i1 and i2 with boolean values from inputs
                     expression.replace(pos, placeholder.length(), inputs[j] ? "1" : "0");
                     pos = expression.find(placeholder, pos + 1);
                 }
             }
         
 
-        
-             bool result= evalauteexpression(expression);// Assuming evaluateexpression is defined elsewhere
+            
+             bool result= evalauteexpression(expression);// evaluate using the string computed in the while function
              return result;
         }
     }
@@ -224,18 +222,18 @@ void CircuitReader::accessCirFile(std::string pathname)
     cir_file.close(); // Closing the .cir file
 }
 bool CircuitReader::getOutput(std::vector<bool> inputs, std::string gatename) {
-    int foundat = -1;
-    for (int i = 0; i < gatesdict.size(); ++i) {
-        if (gatesdict[i].type == gatename) {
-            foundat = i;
+    int foundat = -1; 
+    for (int i = 0; i < gatesdict.size(); ++i) {// loops through gates dict
+        if (gatesdict[i].type == gatename) { // checks if the gate name is the same as the one found in Gates dict
+            foundat = i; //gets its index to be passed in return
             break;
         }
     }
     if (foundat == -1) {
-        std::cout << "Gate not found" << std::endl;
+        std::cout << "Gate not found" << std::endl;// exists if gate not found;
         return false;
     } else {
-        return gatesdict[foundat].outputfc(inputs, gatename,gatesdict);
+        return gatesdict[foundat].outputfc(inputs, gatename,gatesdict);// return inputs and gatename and gatesdict
     }
 }
 void CircuitReader::accessStimFile(string pathname) // A function that reads StimFile and stores the information 
