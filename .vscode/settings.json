@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "string": "cpp",
-        "vector": "cpp",
-        "xstring": "cpp",
-        "stack": "cpp"
-    },
-    "C_Cpp.errorSquiggles": "disabled"
-}
