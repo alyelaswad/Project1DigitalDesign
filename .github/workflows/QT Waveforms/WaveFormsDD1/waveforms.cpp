@@ -95,7 +95,7 @@ void WaveForms::PlotSignals(const QMap<QString, QPair<QVector<double>, QVector<d
         // Create a new graph for the signal
         QCPGraph *graph = ui->GraphWidget->addGraph();
         graph->setName(signalName);
-        graph->setLineStyle(QCPGraph::lsStepCenter); // Set the line style to step center
+        graph->setLineStyle(QCPGraph::lsStepCenter); // Set the line style to a step function
         graph->setScatterStyle(QCPScatterStyle::ssNone); // Set scatter style to none
 
         // Set line color to green
