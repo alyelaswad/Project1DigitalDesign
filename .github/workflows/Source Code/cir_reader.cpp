@@ -201,18 +201,21 @@ void CircuitReader::accessCirFile(std::string pathname)
         }
 
         int max_input_delay = 0;                     // Compute total delay for the gate
-        for (const auto &input_name : gate_i.inputs) // looping over the gate inputs
-        {
-            for (const auto &input_gate : cir_gates) // looping over each gates
-            {
-                if (input_gate.output == input_name)
-                {
-                    max_input_delay = max(max_input_delay, input_gate.delayofgate); // assigns the maximum delay for each of the inputs
-                    // to be the delay of the intermediate values to be later added to the delay of the gate
-                    break;
-                }
-            }
+        for (int i = 0; i < gate_i.inputs.size(); ++i) // looping over the gate inputs
+       {
+           string  input_name = gate_i.inputs[i];
+           for (int j = 0; j < cir_gates.size(); ++j) // looping over each gates
+             {
+                  gate input_gate = cir_gates[j];
+                  if (input_gate.output == input_name)
+                    {
+                      max_input_delay = max(max_input_delay, input_gate.delayofgate); // assigns the maximum delay for each of the inputs
+                       // to be the delay of the intermediate values to be later added to the delay of the gate
+                      break;
+                   }
+             }
         }
+
 
         gate_i.delayofgate += max_input_delay; // Assign total delay to the gate
 
