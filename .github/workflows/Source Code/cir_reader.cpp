@@ -240,11 +240,18 @@ void CircuitReader::compute_circuit(int timestamp)
 {
     // Map to store intermediate values and their previous values
     map<string, bool> intermediate_values;
+    
     // Traverse each gate in the circuit
     for (int i = 0; i < cir_gates.size(); i++)
     {
-        bool output_value;
         gate& current_gate = cir_gates[i];
+
+        // Compute the effective timestamp for this gate including delay
+        int gate_timestamp = timestamp + current_gate.delayofgate;
+
+        // Check if this gate's timestamp has already passed
+        if (gate_timestamp <= timestamp)
+            continue;
 
         // Vector to store inputs for the current gate
         vector<bool> gate_inputs;
@@ -274,28 +281,17 @@ void CircuitReader::compute_circuit(int timestamp)
         }
 
         // Compute the output of the gate based on its inputs
-        output_value = getOutput(gate_inputs, current_gate.type);
-
-        auto it = previous_values.find(current_gate.output);
-        if (it != previous_values.end() && it->second == output_value)
-        {
-            continue;
-        }
+        bool output_value = getOutput(gate_inputs, current_gate.type);
 
         // Record the event since the value has changed
-        intermediateValues.push_back(IntermediateValue(timestamp + current_gate.delayofgate, current_gate.output, output_value));
+        intermediateValues.push_back(IntermediateValue(gate_timestamp, current_gate.output, output_value));
         intermediate_values[current_gate.output] = output_value;
         previous_values[current_gate.output] = output_value;
     }
 }
+
 void CircuitReader::SimulateProgram()
 {
-    // ofstream outputfile(OutputPath);
-    // if (!outputfile.is_open())
-    // {
-    //     cout << "Could not open output file" << endl;
-    //     return;
-    // }
     string input("");
     for (int i = 0; i < inputs.size(); i++)
     {
@@ -303,9 +299,9 @@ void CircuitReader::SimulateProgram()
         intermediateValues.push_back(IntermediateValue(0, input, 0));
         input = "";
     }
+
     for (int i = 0; i < dataVector.size(); i++)
         intermediateValues.push_back(IntermediateValue(dataVector[i].timestamp, dataVector[i].variable, dataVector[i].value));
-  
 
     vector<Data> outputs;
     for (int i = 0; i < inputs.size(); i++)
@@ -313,8 +309,6 @@ void CircuitReader::SimulateProgram()
         current_values.push_back(0);
     }
     compute_circuit(0);
-
-  
     for (int i = 0; i < dataVector.size(); i++)
     {
         char c;
@@ -323,17 +317,37 @@ void CircuitReader::SimulateProgram()
         compute_circuit(dataVector[i].timestamp);
         // cout << "End of Event" << i + 1 << endl
         //      << endl;
+    } 
+for (int k = 0; k < intermediateValues.size(); k++) {
+    bool added = false;
+    if (intermediateValues[k].variable.at(0) == 'w' || intermediateValues[k].variable.at(0) == 'Y') {
+        for (int i = 0; i < cir_gates.size(); i++) {
+            if(added) break;
+            if (cir_gates[i].output == intermediateValues[k].variable) {
+                for (int j = 0; j < cir_gates[i].inputs.size(); j++) {
+                    if(added) break;
+                    if (!cir_gates[i].inputs[j].empty() && cir_gates[i].inputs[j][0] == 'w') {
+                        for (int m = 0; m < cir_gates.size(); m++) {
+                            if (cir_gates[m].output == cir_gates[i].inputs[j]) {
+                                if (!added) {
+                                    intermediateValues[k].timestamp += cir_gates[m].delayofgate;
+                                    added = true;
+                                    break;
+                                }
+                            }
+                        } 
+                    }
+                }
+            }
+        }
     }
-  
-    std::sort(intermediateValues.begin(), intermediateValues.end(), compare_timestamp);
-    for (int i = 0; i < intermediateValues.size(); i++)
-        cout << intermediateValues[i].timestamp << "," << intermediateValues[i].variable << ","
-        << (intermediateValues[i].value ? "1" : "0") << endl;
-    // for (int i = 0; i < cir_gates.size(); i++)
-    // {
-    //     if (cir_gates[i].type == "NOT")
-    //         outputfc(, cir_gates[i].type);
-    // }
-    
 }
 
+
+    std::sort(intermediateValues.begin(), intermediateValues.end(), compare_timestamp);
+
+    for (int k = 0; k < intermediateValues.size(); k++) {
+        cout << intermediateValues[k].timestamp << "," << intermediateValues[k].variable << ","
+             << (intermediateValues[k].value ? "1" : "0") << endl;    
+    }
+}
