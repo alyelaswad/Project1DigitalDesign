@@ -2,86 +2,76 @@
 #include "LogicGates.h"                                            // this header file has the logic gates functionalities
 #include <algorithm>                                               //
 #include <vector>                                                  // the main data structure used was vectors, this allowed us to use its predefined functions such as size, find, sort, etc..
-#include <map>                                                     // this allowed us to map each variable to its boolean value
+#include <map>   
+#include <stack>                                                  // this allowed us to map each variable to its boolean value
 bool compare_timestamp(IntermediateValue &a, IntermediateValue &b) // compares the values based on their timestamp
 {
     return a.timestamp < b.timestamp;
 }
-bool gate::outputfc(vector<bool> inputs)
-{
-    if (type == "NAND")
-    { // if it is a NAND gate
-        if (inputs.size() < 2)
-        {
-            cout << "NAND gate requires at least 2 inputs" << endl;
-            return false;
-        }
-        bool result = g.AND(inputs[0], inputs[1]); // call AND
-        for (int i = 2; i < inputs.size(); ++i)
-        {
-            result = g.AND(result, inputs[i]);
-        }
-        result = g.NOT(result); // invert the AND gate to achieve NAND functionality
-        return result;
-    }
-    else if (type == "NOT")
-    {
-        if (inputs.size() != 1) // NOT gates can only work on a single input
-        {
-            cout << "Invalid number of inputs for NOT gate" << endl;
-            return false;
-        }
-        return g.NOT(inputs[0]);
-    }
-    else if (type == "AND")
-    {
-        if (inputs.size() < 2)
-        {
-            cout << "AND gate requires at least 2 inputs" << endl;
-            return false;
-        }
-        bool result = g.AND(inputs[0], inputs[1]);
-        for (size_t i = 2; i < inputs.size(); ++i) // this function allows us to take multiple inputs to AND
-        {
-            result = g.AND(result, inputs[i]);
-        }
-        return result;
-    }
-    else if (type == "OR")
-    {
-        if (inputs.size() < 2)
-        {
-            cout << "OR gate requires at least 2 inputs" << endl;
-            return false;
-        }
-        bool result = g.OR(inputs[0], inputs[1]);
-        for (size_t i = 2; i < inputs.size(); ++i) // this function allows us to take multiple inputs to OR
-        {
-            result = g.OR(result, inputs[i]);
-        }
-        return result;
-    }
-    else if (type == "NOR")
-    {
-        if (inputs.size() < 2)
-        {
-            cout << "NOR gate requires at least 2 inputs" << endl;
-            return false;
-        }
-        bool result = g.OR(inputs[0], inputs[1]);  // call OR
-        for (size_t i = 2; i < inputs.size(); ++i) // we OR each input with the other until we check all inputs
-        {
-            result = g.OR(result, inputs[i]);
-        }
-        result = g.NOT(result); // invert OR to achieve NOR functionality
-        return result;
-    }
+int precedence(char op) {
+    if (op == '~')
+        return 3;  // Highest precedence for NOT
+    else if (op == '&')
+        return 2;
+    else if (op == '|')
+        return 1;
     else
+        return 0;  // Lowest precedence for parentheses
+} 
+bool evalauteexpression(string express)
     {
-        cout << "Unknown gate type" << endl;
-        return false;
-    }
+     stack<char> operators;
+      stack<bool> operands;
+      LogicGates G;
+       for (char ch : express) {
+        if (ch == '(' || ch == '&' || ch == '|' || ch == '~') {
+            while (!operators.empty() && precedence(operators.top()) >= precedence(ch)) {
+                char op = operators.top();
+                operators.pop();
+                if (op == '~') {
+                    bool operand = operands.top();
+                    operands.pop();
+                    operands.push(G.NOT(operand)); // Perform NOT operation
+                } else {
+                    bool operand2 = operands.top();
+                    operands.pop();
+                    bool operand1 = operands.top();
+                    operands.pop();
+                    if (op == '&') {
+                        operands.push(G.AND(operand1, operand2));
+                    } else if (op == '|') {
+                        operands.push(G.OR(operand1, operand2));
+                    }
+                }
+            }
+            operators.push(ch);
+        } else if (ch == '0' || ch == '1') {
+            operands.push(ch - '0');
+        } else if (ch == ')') {
+            while (!operators.empty() && operators.top() != '(') {
+                char op = operators.top();
+                operators.pop();
+                if (op == '~') {
+                    bool operand = operands.top();
+                    operands.pop();
+                    operands.push(G.NOT(operand)); // Perform NOT operation
+                } else {
+                    bool operand2 = operands.top();
+                    operands.pop();
+                    bool operand1 = operands.top();
+                    operands.pop();
+                    if (op == '&') {
+                        operands.push(G.AND(operand1, operand2));
+                    } else if (op == '|') {
+                        operands.push(G.OR(operand1, operand2));
+                    }
+                }
+            }
+            operators.pop(); // Pop '('
+        }
+       }return operands.top();
 }
+
 void CircuitReader::accessLibFile(const string &pathname)
 {
     ifstream inFile(pathname); // Reads from the .lib file
@@ -114,22 +104,32 @@ void CircuitReader::accessLibFile(const string &pathname)
 
     inFile.close(); // closing the file after reading its data.
 }
-void CircuitReader::readvectorgate() // Debugging function to test that the .lib file was read correctly
-{                                    // prints the content of the gates in gatesdict
-    for (const auto &gate : gatesdict)
-    {
-        cout << "Gate Type: " << gate.type << endl;
-        cout << "Delay: " << gate.delayofgate << endl;
-        cout << "Number of Inputs: " << gate.inputnums << endl;
-        cout << "Inputs: ";
-        for (const auto &input : gate.expression)
-        {
-            cout << input << " ";
+    bool gate::outputfc(vector<bool> inputs, string type, vector<gate> gatesdict) {
+    for (int i = 0; i < gatesdict.size(); i++) {
+        if (gatesdict[i].type == type) {
+            string expression = gatesdict[i].expression;
+
+            // Replace placeholders with input values
+            for (int j = 0; j < inputs.size(); j++) {
+                string placeholder = "i" + to_string(j + 1);
+                size_t pos = expression.find(placeholder);
+                while (pos != string::npos) {
+                    expression.replace(pos, placeholder.length(), inputs[j] ? "1" : "0");
+                    pos = expression.find(placeholder, pos + 1);
+                }
+            }
+        
+
+        
+             bool result= evalauteexpression(expression);// Assuming evaluateexpression is defined elsewhere
+             return result;
         }
-        cout << endl
-             << endl;
     }
+    return false; // Return false if gate type is not found
 }
+
+
+
 
 void CircuitReader::accessCirFile(std::string pathname)
 {
@@ -223,25 +223,19 @@ void CircuitReader::accessCirFile(std::string pathname)
     }
     cir_file.close(); // Closing the .cir file
 }
-bool CircuitReader::getOutput(vector<bool> inputs, string gatename) //Function to get the output based on the gate name 
-{
+bool CircuitReader::getOutput(std::vector<bool> inputs, std::string gatename) {
     int foundat = -1;
-    for (int i = 0; i < gatesdict.size(); ++i)  // Loop to find the type of gate from the gatesdict (libfile gates)
-    {
-        if (gatesdict[i].type == gatename) 
-        {
+    for (int i = 0; i < gatesdict.size(); ++i) {
+        if (gatesdict[i].type == gatename) {
             foundat = i;
             break;
         }
     }
-    if (foundat == -1) // Handling the case of not finding the gate in the libfile gates
-    {
-        cout << "Gate not found" << endl;
+    if (foundat == -1) {
+        std::cout << "Gate not found" << std::endl;
         return false;
-    }
-    else 
-    {
-        return gatesdict[foundat].outputfc(inputs); // return the value of the output depending on the gate type 
+    } else {
+        return gatesdict[foundat].outputfc(inputs, gatename,gatesdict);
     }
 }
 void CircuitReader::accessStimFile(string pathname) // A function that reads StimFile and stores the information 

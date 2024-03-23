@@ -11,7 +11,7 @@ using namespace std;
 
 struct gate
 {
-    std::string type;       // Type of the gate ; for example: NAND2,AND2,NOT1,.....
+    std::string type;       // Type of the gate ; for example: NAND2,AND2,NOT,.....
     int inputnums;          // the number of inputs the gate receives
     std::string expression; // The expression that defines the function of the gate
     int delayofgate;        // Delay of the gate
@@ -19,7 +19,7 @@ struct gate
     LogicGates g;
     string output;
 
-    bool outputfc(vector<bool> inputss);
+    bool outputfc(vector<bool> inputss, string type,vector<gate> gatesdict);
 };
 struct Data // stores data taken from stim file
 {
@@ -55,6 +55,5 @@ public:
     bool getOutput(vector<bool> inputs, string gatename); // Function to get output of gates with 2 inputs
     void SimulateProgram(string pathname);
     void compute_circuit(int timestamp);
-    void readvectorgate();
 
 };
