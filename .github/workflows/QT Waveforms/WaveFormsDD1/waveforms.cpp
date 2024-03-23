@@ -36,10 +36,10 @@ void WaveForms::AccessFile(QString pathname)
         }
 
         QString signalName = parts[1];
-        int time = parts[0].toInt(); // Convert time to integer
+        double time = parts[0].toDouble(); // Convert time to double
         bool signalValue = parts[2].toInt();
 
-        signalMap[signalName].first.append(time); // Use integer time value
+        signalMap[signalName].first.append(time); // Use double time value
         signalMap[signalName].second.append(signalValue ? 1.0 : 0.0);
     }
 
@@ -49,23 +49,26 @@ void WaveForms::AccessFile(QString pathname)
 void WaveForms::PlotSignals(const QMap<QString, QPair<QVector<double>, QVector<double>>>& signalMap)
 {
     ui->GraphWidget->clearGraphs();
-
-    // Set background color to black
     ui->GraphWidget->setBackground(QBrush(Qt::black));
 
-    // Customize the Y-axis to display signal names
-    QSharedPointer<QCPAxisTickerText> textTicker(new QCPAxisTickerText);
+
+    QSharedPointer<QCPAxisTickerText> textTicker(new QCPAxisTickerText); // Customizing the Y-axis to display signal names
     QMap<QString, double> signalPositions;
-    double yPos = 1.0; // Start from 1 to ensure no signal is on the x-axis
+    double yPos = 2.0; // Starting from 2 to leave some space at the bottom
 
     // Find the maximum and minimum time values
     double maxTime = 0.0;
+    double minTime = std::numeric_limits<double>::max();
     for (const QString& signalName : signalMap.keys()) {
         const QVector<double>& times = signalMap.value(signalName).first;
         if (!times.isEmpty()) {
             double maxSignalTime = times.last();
+            double minSignalTime = times.first();
             if (maxSignalTime > maxTime) {
                 maxTime = maxSignalTime;
+            }
+            if (minSignalTime < minTime) {
+                minTime = minSignalTime;
             }
         }
     }
@@ -80,8 +83,9 @@ void WaveForms::PlotSignals(const QMap<QString, QPair<QVector<double>, QVector<d
     ui->GraphWidget->yAxis->setTickLabelColor(Qt::white); // Set signal names color to white
     ui->GraphWidget->yAxis->setLabelColor(Qt::white); // Set axis label color to white
 
-    ui->GraphWidget->xAxis->setLabel("Time");
-    ui->GraphWidget->xAxis->setLabelColor(Qt::white); // Set axis label color to white
+
+    // Set the x-axis to be scaled based on the timestamps
+    ui->GraphWidget->xAxis->setRange(minTime, maxTime);
 
     // Plot each signal
     for (const QString& signalName : signalMap.keys()) {
@@ -101,14 +105,14 @@ void WaveForms::PlotSignals(const QMap<QString, QPair<QVector<double>, QVector<d
         QVector<double> xData, yData;
 
         // Add the initial point
-        xData.append(0.0);
+        xData.append(minTime);
         yData.append(signalPositions[signalName]);
 
         // Iterate over the signal states and plot the points
         for (int i = 0; i < times.size(); ++i) {
             double time = times[i];
             double state = states[i];
-            double y = state > 0.0 ? signalPositions[signalName] + 1.0 : signalPositions[signalName];
+            double y = signalPositions[signalName] + (state > 0.0 ? 1.0 : 0.0);
 
             // Add current state point
             xData.append(time);
@@ -127,9 +131,9 @@ void WaveForms::PlotSignals(const QMap<QString, QPair<QVector<double>, QVector<d
 
     // Rescale axes and replot the graph
     ui->GraphWidget->rescaleAxes();
+    ui->GraphWidget->yAxis->setRange(0, yPos); // Adjust the y-axis range to include space at the top
     ui->GraphWidget->replot();
 }
-
 
 WaveForms::~WaveForms()
 {
