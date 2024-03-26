@@ -3,7 +3,9 @@
 #include <algorithm>                                               //
 #include <vector>                                                  // the main data structure used was vectors, this allowed us to use its predefined functions such as size, find, sort, etc..
 #include <map>   
-#include <stack>                                                  // this allowed us to map each variable to its boolean value
+#include <unordered_map>
+#include <functional>
+#include <stack>                                             // this allowed us to map each variable to its boolean value
 bool compare_timestamp(IntermediateValue &a, IntermediateValue &b) // compares the values based on their timestamp
 {
     return a.timestamp < b.timestamp;
@@ -18,35 +20,20 @@ int precedence(char op) {
     else
         return 0;  // Lowest precedence for parentheses
 } 
-bool evalauteexpression(string express)
-    {
-      stack<char> operators;
-      stack<bool> operands;
-      LogicGates G;
-       for (char ch : express) {
-        if (ch == '(' || ch == '&' || ch == '|' || ch == '~') {
-            while (!operators.empty() && precedence(operators.top()) >= precedence(ch)) {
-                char op = operators.top();
-                operators.pop();
-                if (op == '~') {
-                    bool operand = operands.top();
-                    operands.pop();
-                    operands.push(G.NOT(operand)); // Perform NOT operation
-                } else {
-                    bool operand2 = operands.top();
-                    operands.pop();
-                    bool operand1 = operands.top();
-                    operands.pop();
-                    if (op == '&') {
-                        operands.push(G.AND(operand1, operand2));
-                    } else if (op == '|') {
-                        operands.push(G.OR(operand1, operand2));
-                    }
-                }
-            }
+bool evaluateexpression(string express) {
+    stack<char> operators;
+    stack<bool> operands;
+    LogicGates G;
+
+    typedef bool (LogicGates::*BinaryOperation)(bool, bool);
+    unordered_map<char, BinaryOperation> binaryOperations = {
+        {'&', &LogicGates::AND},
+        {'|', &LogicGates::OR}
+    };
+
+    for (char ch : express) {
+        if (ch == '(') {
             operators.push(ch);
-        } else if (ch == '0' || ch == '1') {
-            operands.push(ch - '0');
         } else if (ch == ')') {
             while (!operators.empty() && operators.top() != '(') {
                 char op = operators.top();
@@ -60,16 +47,49 @@ bool evalauteexpression(string express)
                     operands.pop();
                     bool operand1 = operands.top();
                     operands.pop();
-                    if (op == '&') {
-                        operands.push(G.AND(operand1, operand2));
-                    } else if (op == '|') {
-                        operands.push(G.OR(operand1, operand2));
-                    }
+                    operands.push((G.*(binaryOperations[op]))(operand1, operand2));
                 }
             }
             operators.pop(); // Pop '('
+        } else if (ch == '&' || ch == '|' || ch == '~') {
+            while (!operators.empty() && precedence(operators.top()) >= precedence(ch)) {
+                char op = operators.top();
+                operators.pop();
+                if (op == '~') {
+                    bool operand = operands.top();
+                    operands.pop();
+                    operands.push(G.NOT(operand)); // Perform NOT operation
+                } else {
+                    bool operand2 = operands.top();
+                    operands.pop();
+                    bool operand1 = operands.top();
+                    operands.pop();
+                    operands.push((G.*(binaryOperations[op]))(operand1, operand2));
+                }
+            }
+            operators.push(ch);
+        } else if (ch == '0' || ch == '1') {
+            operands.push(ch == '0' ? false : true); // Push boolean values instead of characters
         }
-       }return operands.top();
+    }
+
+    while (!operators.empty()) {
+        char op = operators.top();
+        operators.pop();
+        if (op == '~') {
+            bool operand = operands.top();
+            operands.pop();
+            operands.push(G.NOT(operand)); // Perform NOT operation
+        } else {
+            bool operand2 = operands.top();
+            operands.pop();
+            bool operand1 = operands.top();
+            operands.pop();
+            operands.push((G.*(binaryOperations[op]))(operand1, operand2));
+        }
+    }
+
+    return operands.top();
 }
 
 void CircuitReader::accessLibFile(const string &pathname)
@@ -116,10 +136,7 @@ void CircuitReader::accessLibFile(const string &pathname)
                     pos = expression.find(placeholder, pos + 1);
                 }
             }
-        
-
-            
-             bool result= evalauteexpression(expression);// evaluate using the string computed in the while function
+             bool result= evaluateexpression(expression);// evaluate using the string computed in the while function
              return result;
         }
     }
