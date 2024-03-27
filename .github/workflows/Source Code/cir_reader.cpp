@@ -21,6 +21,7 @@ int precedence(char op)
     else
         return 0; // Lowest precedence for parentheses
 }
+
 bool evaluateexpression(string express)
 {
     stack<char> operators;
@@ -90,6 +91,7 @@ bool evaluateexpression(string express)
         }
     }
 
+    // After processing the entire expression, we might have remaining operators to evaluate
     while (!operators.empty())
     {
         char op = operators.top();
@@ -110,6 +112,7 @@ bool evaluateexpression(string express)
         }
     }
 
+    // At the end, operands stack should contain the final result
     return operands.top();
 }
 
@@ -166,7 +169,6 @@ bool gate::outputfc(vector<bool> inputs, string type, vector<gate> gatesdict)
             return result;
         }
     }
-    return false; // Return false if gate type is not found
 }
 
 void CircuitReader::accessCirFile(std::string pathname)
@@ -200,6 +202,7 @@ void CircuitReader::accessCirFile(std::string pathname)
         std::string name, type;
         getline(ss, name, ','); // since the file is comma separated
         getline(ss, type, ',');
+
         for (int i = 0; i < type.length(); i++)
         {
             if (!isalpha(type[i])) // removes the spaces which might affect results
@@ -229,12 +232,10 @@ void CircuitReader::accessCirFile(std::string pathname)
         string output;
         getline(ss, output, ','); // Reading the outputs
         gate_i.output = output;
-        int n = type[type.size() - 1] - '0'; // Calculating the number of inputs for the gate
         // For example, if the gate is NAND2, then it has 2 inouts, etc...
-        for (int i = 0; i < n; i++)
+        string name1;
+        while (getline(ss, name1, ','))
         {
-            string name1; // gets the name of the gate
-            getline(ss, name1, ',');
             gate_i.inputs.push_back(name1); // Reading the inputs
         }
 
@@ -263,7 +264,7 @@ void CircuitReader::accessCirFile(std::string pathname)
 bool CircuitReader::getOutput(std::vector<bool> inputs, std::string gatename)
 {
     int foundat = -1;
-    for (int i = 0; i < gatesdict.size(); ++i)
+    for (int i = 0; i < gatesdict.size(); i++)
     { // loops through gates dict
         if (gatesdict[i].type == gatename)
         {                // checks if the gate name is the same as the one found in Gates dict
@@ -312,19 +313,18 @@ void CircuitReader::accessStimFile(string pathname) // A function that reads Sti
 }
 void CircuitReader::compute_circuit(int timestamp) // A function that computes the outputs of the gates in a certain timestamp
 {
-    map<string, bool> intermediate_values; // A map that stores intermediate values
-
+    map<string, bool> intermediate_values;     // A map that stores intermediate values
     for (int i = 0; i < cir_gates.size(); i++) // Loop over all the gates in the circuit to compute their outputs
     {
         bool output_value;
-        gate &current_gate = cir_gates[i];
+        gate &current_gate = cir_gates[i]; // Use reference instead of copy
 
         vector<bool> gate_inputs; // A vector that stores the current inputs of the gate
-
+        // cout << current_gate.inputnums << " ";
         for (int j = 0; j < current_gate.inputnums; j++) // Loop all over the inputs to process them
         {
             string input_name = current_gate.inputs[j];
-
+            // cout << "Input: " << input_name << "  ";
             auto it = intermediate_values.find(input_name); // Check whether the input value is computed and stored
             bool input_value;                               // in the intermediate_values vector
             if (it != intermediate_values.end())
@@ -336,55 +336,68 @@ void CircuitReader::compute_circuit(int timestamp) // A function that computes t
                 char input_variable = input_name[0];
                 int input_index = input_variable - 'A'; // Calculating the index through the input name
                 input_value = current_values[input_index];
+                // cout << " Value: " << input_value << endl;
             }
+            // cout << input_value << endl;
 
             gate_inputs.push_back(input_value); // Storing the value of the inputs in the gate_inputs vector
         }
-
         output_value = getOutput(gate_inputs, current_gate.type); // Computing the output of the gates based on the
-                                                                  // inputs and type of the gate
         auto it = previous_values.find(current_gate.output);
-        if (it != previous_values.end() && it->second == output_value) // Check if there was a previous duplicate and
-        {                                                              // skip the current value if there was a duplicate
-            continue;
-        }
+        // if (it != previous_values.end() && it->second == output_value) // Check if there was a previous duplicate and
+        // {                                                              // skip the current value if there was a duplicate
+        //     continue;
+        // }
+        // inputs and type of the gate
         // Recording the timestamp, output and the delay
         intermediateValues.push_back(IntermediateValue(timestamp + current_gate.delayofgate, current_gate.output, output_value));
         intermediate_values[current_gate.output] = output_value;
-        previous_values[current_gate.output] = output_value; // Storing the value in the previous_values vector
+        // previous_values[current_gate.output] = output_value; // Storing the value in the previous_values vector
     }
 }
-void CircuitReader::SimulateProgram(string pathname) // A Function that prints the output in a .sim file
+void CircuitReader::SimulateProgram(string pathname)
 {
-    string input("");
-    // for (int i = 0; i < inputs.size(); i++) // A loop that removes the spaces after the input names
-    // {
-    //     input += inputs[i][0];
-    //     // intermediateValues.push_back(IntermediateValue(0, input, 0));
-    //     input = "";
-    // }
-    for (int i = 0; i < dataVector.size(); i++) // Looping over the dataVector to push all the input information in the intermediateValues vector
-        intermediateValues.push_back(IntermediateValue(dataVector[i].timestamp, dataVector[i].variable, dataVector[i].value));
+    // Clear any previous data
+    intermediateValues.clear();
+    current_values.clear();
 
-    vector<Data> outputs;
-    for (int i = 0; i < inputs.size(); i++) // The inputs are considered at logic "0" in the beggining
+    // Initialize inputs
+    for (int i = 0; i < inputs.size(); i++)
     {
         current_values.push_back(0);
     }
-    // compute_circuit(0); // The outputs of the gates are calculated in the beggining
 
-    // current_values.resize(inputs.size());
-    for (int i = 0; i < dataVector.size(); i++) // The outputs are computed for all the timestamps
+    // Process stimuli read by StimfileReader
+    for (int i = 0; i < dataVector.size(); i++)
     {
-        char c;
-        c = dataVector[i].variable[0];
+        char c = dataVector[i].variable[0];
         current_values[int(c) - 65] = dataVector[i].value;
+    }
+
+    // Compute initial circuit state
+    compute_circuit(0);
+
+    // Process stimuli for each timestamp
+    for (int i = 0; i < dataVector.size(); i++)
+    {
         compute_circuit(dataVector[i].timestamp);
     }
 
-    std::sort(intermediateValues.begin(), intermediateValues.end(), compare_timestamp); // The vector is sorted based on the timestamps
+    // Sort intermediate values based on timestamps
+    std::sort(intermediateValues.begin(), intermediateValues.end(), compare_timestamp);
+
+    // Write intermediate values to simulation file
     ofstream simfile(pathname);
-    for (int i = 0; i < intermediateValues.size(); i++) // The output is printed in the .sim file
+    for (int i = 0; i < intermediateValues.size(); i++)
+    {
         simfile << intermediateValues[i].timestamp << "," << intermediateValues[i].variable << ","
                 << (intermediateValues[i].value ? "1" : "0") << endl;
+    }
+
+    // Output intermediate values to console for debugging
+    for (int i = 0; i < intermediateValues.size(); i++)
+    {
+        cout << intermediateValues[i].timestamp << " " << intermediateValues[i].variable
+             << " " << intermediateValues[i].value << endl;
+    }
 }

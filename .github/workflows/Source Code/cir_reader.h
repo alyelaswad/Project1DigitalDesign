@@ -55,4 +55,28 @@ public:
     bool getOutput(vector<bool> inputs, string gatename); // Function to get output of gates with n number inputs
     void SimulateProgram(string pathname);                // Function to Sim Program and Output in File
     void compute_circuit(int timestamp);                  // Function to compute circuit depending on each timestamp
+    void clearIntermediateValues()
+    {
+        intermediateValues.clear(); // Clearing the intermediate values vector to prevent memory corruption
+    }
+
+    void clearPreviousValues()
+    {
+        previous_values.clear(); // Clearing the previous values map to prevent memory corruption
+    }
+
+    void clearCurrentValues()
+    {
+        current_values.clear(); // Clearing the current values vector to prevent memory corruption
+    }
+
+    void clearCircuitGates()
+    {
+        cir_gates.clear(); // Clearing the circuit gates vector to prevent memory corruption
+    }
+
+    void clearGatesDict()
+    {
+        gatesdict.clear(); // Clearing the gates dictionary vector to prevent memory corruption
+    }
 };
