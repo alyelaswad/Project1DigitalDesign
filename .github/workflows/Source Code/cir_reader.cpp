@@ -5,7 +5,9 @@
 #include <map>
 #include <unordered_map>
 #include <functional>
-#include <stack>                                                   // this allowed us to map each variable to its boolean value
+#include <stack> // this allowed us to map each variable to its boolean value
+#include <queue>
+#include <set>
 bool compare_timestamp(IntermediateValue &a, IntermediateValue &b) // compares the values based on their timestamp
 {
     return a.timestamp < b.timestamp;
@@ -169,6 +171,7 @@ bool gate::outputfc(vector<bool> inputs, string type, vector<gate> gatesdict)
             return result;
         }
     }
+    return 0;
 }
 
 void CircuitReader::accessCirFile(std::string pathname)
@@ -296,7 +299,7 @@ void CircuitReader::accessStimFile(string pathname) // A function that reads Sti
             stringstream ss(line);
             string parcer;
 
-            Data temp;
+            IntermediateValue temp;
 
             getline(ss, parcer, ',');
             temp.timestamp = stoi(parcer);
@@ -313,46 +316,54 @@ void CircuitReader::accessStimFile(string pathname) // A function that reads Sti
 }
 void CircuitReader::compute_circuit(int timestamp) // A function that computes the outputs of the gates in a certain timestamp
 {
-    map<string, bool> intermediate_values;     // A map that stores intermediate values
-    for (int i = 0; i < cir_gates.size(); i++) // Loop over all the gates in the circuit to compute their outputs
-    {
-        bool output_value;
-        gate &current_gate = cir_gates[i]; // Use reference instead of copy
+    unordered_map<string, bool> currentStates; // Maps variable names to their current values
+    std::sort(dataVector.begin(), dataVector.end(), [](const IntermediateValue &a, IntermediateValue &b)
+              { return a.timestamp < b.timestamp; });
 
-        vector<bool> gate_inputs; // A vector that stores the current inputs of the gate
-        // cout << current_gate.inputnums << " ";
-        for (int j = 0; j < current_gate.inputnums; j++) // Loop all over the inputs to process them
+    // Update current states based on stimuli data at the given timestamp
+    for (const auto &data : dataVector)
+    {
+        if (data.timestamp > timestamp)
         {
-            string input_name = current_gate.inputs[j];
-            // cout << "Input: " << input_name << "  ";
-            auto it = intermediate_values.find(input_name); // Check whether the input value is computed and stored
-            bool input_value;                               // in the intermediate_values vector
-            if (it != intermediate_values.end())
+            break; // Exit the loop once we pass the target timestamp
+        }
+        currentStates[data.variable] = data.value;
+    }
+
+    // Compute outputs of gates
+    for (const auto &gatee : cir_gates)
+    {
+        if (gatee.output.empty())
+        {
+            continue; // Skip gates without output (if any)
+        }
+
+        vector<bool> inputss;
+        for (const auto &inputName : gatee.inputs)
+        {
+            // Lookup the value of each input in the current states
+            auto it = currentStates.find(inputName);
+            // auto it2 = find(inputs.begin(), inputs.end(), inputName);
+            // auto it3 = find(gatee.begin(), inputs.end(), inputName);
+            if (it != currentStates.end())
             {
-                input_value = it->second;
+                inputss.push_back(it->second);
             }
             else
             {
-                char input_variable = input_name[0];
-                int input_index = input_variable - 'A'; // Calculating the index through the input name
-                input_value = current_values[input_index];
-                // cout << " Value: " << input_value << endl;
+                // cerr << "Error: Input variable " << inputName << " not found." << endl;
+                // Handle the missing input variable as needed
+                // For simplicity, you can choose to skip this gate or set its output to a default value
+                inputss.push_back(false); // Default value
             }
-            // cout << input_value << endl;
-
-            gate_inputs.push_back(input_value); // Storing the value of the inputs in the gate_inputs vector
         }
-        output_value = getOutput(gate_inputs, current_gate.type); // Computing the output of the gates based on the
-        auto it = previous_values.find(current_gate.output);
-        // if (it != previous_values.end() && it->second == output_value) // Check if there was a previous duplicate and
-        // {                                                              // skip the current value if there was a duplicate
-        //     continue;
-        // }
-        // inputs and type of the gate
-        // Recording the timestamp, output and the delay
-        intermediateValues.push_back(IntermediateValue(timestamp + current_gate.delayofgate, current_gate.output, output_value));
-        intermediate_values[current_gate.output] = output_value;
-        // previous_values[current_gate.output] = output_value; // Storing the value in the previous_values vector
+
+        // Evaluate the gate output using getOutput function
+        bool gateOutput = getOutput(inputss, gatee.type);
+
+        // Update the current state with the gate's output
+        currentStates[gatee.output] = gateOutput;
+        intermediateValues.push_back(IntermediateValue(timestamp + gatee.delayofgate, gatee.output, gateOutput));
     }
 }
 void CircuitReader::SimulateProgram(string pathname)
@@ -386,18 +397,22 @@ void CircuitReader::SimulateProgram(string pathname)
     // Sort intermediate values based on timestamps
     std::sort(intermediateValues.begin(), intermediateValues.end(), compare_timestamp);
 
-    // Write intermediate values to simulation file
-    ofstream simfile(pathname);
-    for (int i = 0; i < intermediateValues.size(); i++)
+    std::set<IntermediateValue> uniqueIntermediateValues;
+    for (int i = 0; i < dataVector.size(); i++)
     {
-        simfile << intermediateValues[i].timestamp << "," << intermediateValues[i].variable << ","
-                << (intermediateValues[i].value ? "1" : "0") << endl;
+
+        uniqueIntermediateValues.insert(dataVector[i]);
     }
 
-    // Output intermediate values to console for debugging
+    // Insert intermediate values into the set to remove duplicates
     for (int i = 0; i < intermediateValues.size(); i++)
     {
-        cout << intermediateValues[i].timestamp << " " << intermediateValues[i].variable
-             << " " << intermediateValues[i].value << endl;
+        uniqueIntermediateValues.insert(intermediateValues[i]);
+    }
+
+    // Output intermediate values to console
+    for (const auto &value : uniqueIntermediateValues)
+    {
+        cout << value.timestamp << "," << value.variable << "," << value.value << endl;
     }
 }

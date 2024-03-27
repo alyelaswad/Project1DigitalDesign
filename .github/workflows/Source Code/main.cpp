@@ -25,7 +25,7 @@ int main()
     //     cout << "Could not read circuit file, please recheck the path.\n";
     //     return 1;
     // }
-    circuit.accessCirFile("2.cir");
+    circuit.accessCirFile("circ2.cir");
     // File.close();
 
     // cout << "Enter Pathname of the .stim file:\n";

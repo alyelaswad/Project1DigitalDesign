@@ -21,19 +21,25 @@ struct gate
 
     bool outputfc(vector<bool> inputss, string type, vector<gate> gatesdict);
 };
-struct Data // stores data taken from stim file
-{
-    int timestamp;
-    string variable;
-    bool value;
-};
 
 struct IntermediateValue
 {
     int timestamp;
     string variable;
     bool value;
-
+    bool operator<(const IntermediateValue &other) const
+    {
+        if (timestamp != other.timestamp)
+        {
+            return timestamp < other.timestamp;
+        }
+        if (variable != other.variable)
+        {
+            return variable < other.variable;
+        }
+        return value < other.value;
+    }
+    IntermediateValue() {}
     IntermediateValue(int ts, const string &var, bool val) : timestamp(ts), variable(var), value(val) {}
 };
 
@@ -47,7 +53,7 @@ private:
     map<string, bool> previous_values;
 
 public:
-    vector<Data> dataVector;
+    vector<IntermediateValue> dataVector;
     vector<gate> cir_gates;
     void accessLibFile(const string &pathname);           // Function to read the .lib file
     void accessCirFile(string pathname);                  // Function to read the .cir file
@@ -55,28 +61,4 @@ public:
     bool getOutput(vector<bool> inputs, string gatename); // Function to get output of gates with n number inputs
     void SimulateProgram(string pathname);                // Function to Sim Program and Output in File
     void compute_circuit(int timestamp);                  // Function to compute circuit depending on each timestamp
-    void clearIntermediateValues()
-    {
-        intermediateValues.clear(); // Clearing the intermediate values vector to prevent memory corruption
-    }
-
-    void clearPreviousValues()
-    {
-        previous_values.clear(); // Clearing the previous values map to prevent memory corruption
-    }
-
-    void clearCurrentValues()
-    {
-        current_values.clear(); // Clearing the current values vector to prevent memory corruption
-    }
-
-    void clearCircuitGates()
-    {
-        cir_gates.clear(); // Clearing the circuit gates vector to prevent memory corruption
-    }
-
-    void clearGatesDict()
-    {
-        gatesdict.clear(); // Clearing the gates dictionary vector to prevent memory corruption
-    }
 };
