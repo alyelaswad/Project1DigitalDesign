@@ -229,7 +229,7 @@ void CircuitReader::accessCirFile(std::string pathname)
         if (!gate_found) // message to indicate that the gate is not defined in the .lib
         {
             cout << "Gate type '" << type << "' not found in the library" << endl;
-            continue;
+            terminate();
         }
 
         string output;
@@ -351,7 +351,8 @@ void CircuitReader::compute_circuit(int timestamp) // A function that computes t
             }
             else
             {
-                // cerr << "Error: Input variable " << inputName << " not found." << endl;
+                cerr << "Error: Input variable " << inputName << " not found." << endl;
+                // terminate();
                 // Handle the missing input variable as needed
                 // For simplicity, you can choose to skip this gate or set its output to a default value
                 inputss.push_back(false); // Default value

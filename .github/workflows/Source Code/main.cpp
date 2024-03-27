@@ -36,12 +36,12 @@ int main()
     //     cout << "Could not read stimuli file, please recheck the path.\n";
     //     return 1;
     // }
-    circuit.accessStimFile("1.stim");
+    circuit.accessStimFile("circ_3Var.stim");
     // File.close();
 
     circuit.SimulateProgram("simulation.sim");
     return 0;
 }
-// cells.lib
-// 2.cir
-// 1.stim
+// Infinite circuits
+// 0 initlization
+// repeating non-changed values
