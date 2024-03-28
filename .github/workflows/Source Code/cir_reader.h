@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -50,7 +51,7 @@ private:
     vector<string> inputs;
     vector<bool> current_values;
     vector<IntermediateValue> intermediateValues;
-    map<string, bool> previous_values;
+    std::unordered_map<std::string, bool> previousValues;
 
 public:
     vector<IntermediateValue> dataVector;
@@ -61,4 +62,15 @@ public:
     bool getOutput(vector<bool> inputs, string gatename); // Function to get output of gates with n number inputs
     void SimulateProgram(string pathname);                // Function to Sim Program and Output in File
     void compute_circuit(int timestamp);                  // Function to compute circuit depending on each timestamp
+    bool getPreviousValue(const std::string &variable)
+    {
+        if (previousValues.find(variable) != previousValues.end())
+        {  return previousValues[variable];}
+          else
+        { // If previous value not found, return default value (false)
+            return false; }
+    }
+
+    // Function to update previous value of an output variable
+    void updatePreviousValue(const std::string &variable, bool value){previousValues[variable] = value;}
 };
