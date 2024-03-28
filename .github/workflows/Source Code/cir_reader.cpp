@@ -8,6 +8,16 @@
 #include <stack> // this allowed us to map each variable to its boolean value
 #include <queue>
 #include <set>
+#include <unordered_set>
+bool isOutputOfPreviousGate(string output, vector<gate>& previousGates) 
+{
+    for (const auto& gate : previousGates) {
+        if (gate.output == output) {
+            return true; 
+        }
+    }
+    return false; // Output is not found in previous gates
+}
 bool compare_timestamp(IntermediateValue &a, IntermediateValue &b) // compares the values based on their timestamp
 {
     return a.timestamp < b.timestamp;
@@ -183,7 +193,7 @@ void CircuitReader::accessCirFile(std::string pathname)
         return;
     }
 
-    string line;
+    string line,convert("");
     while (getline(cir_file, line) && line != "COMPONENTS:") // until all the inputs are read
     {
         if (line == "INPUTS:") // we ignore the lines were INPUTS is written
@@ -191,7 +201,8 @@ void CircuitReader::accessCirFile(std::string pathname)
             continue;          // goes to the next iteration, ignoring the loop body
         else
         {
-            inputs.push_back(line); // Storing the inputs
+            inputs.push_back(line[0]+convert); // Storing the inputs
+            convert="";
         }
     }
 
@@ -239,6 +250,9 @@ void CircuitReader::accessCirFile(std::string pathname)
         string name1;
         while (getline(ss, name1, ','))
         {
+            size_t endpos = name1.find_last_not_of(" \t");
+            if (endpos != std::string::npos) 
+            name1 = name1.substr(0, endpos + 1);
             gate_i.inputs.push_back(name1); // Reading the inputs
         }
 
@@ -263,6 +277,22 @@ void CircuitReader::accessCirFile(std::string pathname)
         cir_gates.push_back(gate_i); // Store the gate with its computed delay
     }
     cir_file.close(); // Closing the .cir file
+    bool inputFound = false; 
+    unordered_set<string> inputSet(inputs.begin(), inputs.end());
+
+
+    for (const auto& gate : cir_gates) 
+    {
+        for (const auto& input : gate.inputs) 
+        {
+            if (inputSet.find(input) == inputSet.end() && !isOutputOfPreviousGate(input, cir_gates)) 
+            {
+                cout << "One of the inputs of the gates is invalid" << endl;
+                terminate();
+            }
+        }
+
+}
 }
 bool CircuitReader::getOutput(std::vector<bool> inputs, std::string gatename)
 {
@@ -351,7 +381,6 @@ void CircuitReader::compute_circuit(int timestamp) // A function that computes t
             }
             else
             {
-                cerr << "Error: Input variable " << inputName << " not found." << endl;
                 // terminate();
                 // Handle the missing input variable as needed
                 // For simplicity, you can choose to skip this gate or set its output to a default value
@@ -378,7 +407,19 @@ void CircuitReader::SimulateProgram(string pathname)
     {
         current_values.push_back(0);
     }
-
+    int x;
+    for(int i=0; i<inputs.size();i++)
+    {
+        if(dataVector[i].timestamp==0)
+        x++;
+    }
+    if(x!=inputs.size())
+    {
+        for(int i=0;i<inputs.size();i++)
+        {
+            dataVector.insert(dataVector.begin(),IntermediateValue(0,inputs[i],0));
+        }
+    }
     // Process stimuli read by StimfileReader
     for (int i = 0; i < dataVector.size(); i++)
     {
