@@ -4,6 +4,6 @@ B
 C
 COMPONENTS:
 G0,NOT, w1, C
-G1,AND2, w2, A, w1
+G1,NOT, A, A
 G2,AND2, w3, C, B
-G3, MAJ3, Y, w2, w3, A
+G3, MAJ3, Y, C, w3, A

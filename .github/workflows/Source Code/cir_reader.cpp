@@ -9,14 +9,18 @@
 #include <queue>
 #include <set>
 #include <unordered_set>
-bool isNotSpace(char ch) {
+#include <fstream>
+bool isNotSpace(char ch)
+{
     return (ch != ' ');
 }
-bool isOutputOfPreviousGate(string output, vector<gate>& previousGates) 
+bool isOutputOfPreviousGate(string output, vector<gate> &previousGates)
 {
-    for (const auto& gate : previousGates) {
-        if (gate.output == output) {
-            return true; 
+    for (const auto &gate : previousGates)
+    {
+        if (gate.output == output)
+        {
+            return true;
         }
     }
     return false; // Output is not found in previous gates
@@ -196,7 +200,7 @@ void CircuitReader::accessCirFile(std::string pathname)
         return;
     }
 
-    string line,convert("");
+    string line, convert("");
     while (getline(cir_file, line) && line != "COMPONENTS:") // until all the inputs are read
     {
         if (line == "INPUTS:") // we ignore the lines were INPUTS is written
@@ -205,12 +209,12 @@ void CircuitReader::accessCirFile(std::string pathname)
         else
         {
             for (int i = 0; i < line.length(); i++)
-        {
-            if (!isNotSpace(line[i])) // removes the spaces which might affect results
             {
-                line.erase(i, 1);
+                if (!isNotSpace(line[i])) // removes the spaces which might affect results
+                {
+                    line.erase(i, 1);
+                }
             }
-        }
             inputs.push_back(line); // Storing the inputs
         }
     }
@@ -254,7 +258,7 @@ void CircuitReader::accessCirFile(std::string pathname)
 
         string output;
         getline(ss, output, ','); // Reading the outputs
-          for (int i = 0; i < output.length(); i++)
+        for (int i = 0; i < output.length(); i++)
         {
             if (!isNotSpace(output[i])) // removes the spaces which might affect results
             {
@@ -266,13 +270,13 @@ void CircuitReader::accessCirFile(std::string pathname)
         string name1;
         while (getline(ss, name1, ','))
         {
-         for (int i = 0; i < name1.length(); i++)
-        {
-            if (!isNotSpace(name1[i])) // removes the spaces which might affect results
+            for (int i = 0; i < name1.length(); i++)
             {
-                name1.erase(i, 1);
+                if (!isNotSpace(name1[i])) // removes the spaces which might affect results
+                {
+                    name1.erase(i, 1);
+                }
             }
-        }
             gate_i.inputs.push_back(name1); // Reading the inputs
         }
 
@@ -297,22 +301,20 @@ void CircuitReader::accessCirFile(std::string pathname)
         cir_gates.push_back(gate_i); // Store the gate with its computed delay
     }
     cir_file.close(); // Closing the .cir file
-    bool inputFound = false; 
+    bool inputFound = false;
     unordered_set<string> inputSet(inputs.begin(), inputs.end());
 
-
-    for (const auto& gate : cir_gates) 
+    for (const auto &gate : cir_gates)
     {
-        for ( string input : gate.inputs) 
+        for (string input : gate.inputs)
         {
-            if (inputSet.find(input) == inputSet.end() && !isOutputOfPreviousGate(input, cir_gates)) 
+            if (inputSet.find(input) == inputSet.end() && !isOutputOfPreviousGate(input, cir_gates))
             {
                 cout << "One of the inputs of the gates is invalid" << endl;
                 terminate();
             }
         }
-
-}
+    }
 }
 bool CircuitReader::getOutput(std::vector<bool> inputs, std::string gatename)
 {
@@ -355,12 +357,12 @@ void CircuitReader::accessStimFile(string pathname) // A function that reads Sti
             temp.timestamp = stoi(parcer);
 
             getline(ss, parcer, ',');
-             for (int i = 0; i < parcer.length(); i++)
+            for (int i = 0; i < parcer.length(); i++)
             {
-            if (!isNotSpace(parcer[i])) // removes the spaces which might affect results
-            {
-                parcer.erase(i, 1);
-            }
+                if (!isNotSpace(parcer[i])) // removes the spaces which might affect results
+                {
+                    parcer.erase(i, 1);
+                }
             }
             temp.variable = parcer;
 
@@ -438,6 +440,40 @@ void CircuitReader::compute_circuit(int timestamp)
             intermediateValues.push_back(IntermediateValue(timestamp + gatee.delayofgate, gatee.output, gateOutput));
             updatePreviousValue(gatee.output, gateOutput);
         }
+        int h;
+        int timestampfloop = timestamp;
+        // Check if the output matches any input
+        for (int i = 0; i < inputs.size(); ++i)
+        {
+            const auto &input = inputs[i];
+            vector<bool> temp;
+            if (gatee.output == input)
+            {
+                for (int j = 0; j < gatee.inputs.size(); j++)
+                {
+                    temp.push_back(inputss[j]);
+                    h = j;
+                }
+                // Run computation for th
+                int z = 0;
+                while (z < 100)
+                { // Limit the loop to 50 iterations
+                    z++;
+
+                    // Recompute the gate output
+                    bool gateOutput = getOutput(temp, gatee.type);
+                    // Update the current state with the updated output
+                    currentStates[gatee.output] = gateOutput;
+                    // Replace the first occurrence of gate output in inputs with its value
+                    temp[h] = gateOutput;
+                    intermediateValues.push_back(IntermediateValue(timestampfloop + gatee.delayofgate, gatee.output, gateOutput));
+                    timestampfloop += gatee.delayofgate; // Update timestamp
+                }
+            }
+        }
+        bool gateOutput = getOutput(inputss, gatee.type);
+        currentStates[gatee.output] = gateOutput;
+        intermediateValues.push_back(IntermediateValue(timestampfloop + gatee.delayofgate, gatee.output, gateOutput));
     }
 }
 void CircuitReader::SimulateProgram(string pathname)
@@ -451,15 +487,15 @@ void CircuitReader::SimulateProgram(string pathname)
     {
         current_values.push_back(0);
     }
-    for(int i=0; i<inputs.size();i++)
+    for (int i = 0; i < inputs.size(); i++)
     {
-        if(dataVector[i].timestamp!=0)
-        dataVector.insert(dataVector.begin()+i,IntermediateValue(0,inputs[i],0));
+        if (dataVector[i].timestamp != 0)
+            dataVector.insert(dataVector.begin() + i, IntermediateValue(0, inputs[i], 0));
     }
-    for(int i=0; i<inputs.size();i++)
+    for (int i = 0; i < inputs.size(); i++)
     {
-        if(dataVector[i].timestamp==0 && dataVector[i].value==0 && dataVector[i].variable!=inputs[i])
-        dataVector.insert(dataVector.begin()+i,IntermediateValue(0,inputs[i],0));
+        if (dataVector[i].timestamp == 0 && dataVector[i].value == 0 && dataVector[i].variable != inputs[i])
+            dataVector.insert(dataVector.begin() + i, IntermediateValue(0, inputs[i], 0));
     }
     // Process stimuli read by StimfileReader
     for (int i = 0; i < dataVector.size(); i++)
@@ -492,10 +528,10 @@ void CircuitReader::SimulateProgram(string pathname)
     {
         uniqueIntermediateValues.insert(intermediateValues[i]);
     }
-
+    ofstream outfile(pathname);
     // Output intermediate values to console
     for (const auto &value : uniqueIntermediateValues)
     {
-        cout << value.timestamp << "," << value.variable << "," << value.value << endl;
+        outfile << value.timestamp << "," << value.variable << "," << value.value << endl;
     }
 }
