@@ -344,10 +344,10 @@ void CircuitReader::accessStimFile(string pathname) // A function that reads Sti
         }
     }
 }
-void CircuitReader::compute_circuit(int timestamp) // A function that computes the outputs of the gates in a certain timestamp
+void CircuitReader::compute_circuit(int timestamp)
 {
     unordered_map<string, bool> currentStates; // Maps variable names to their current values
-    std::sort(dataVector.begin(), dataVector.end(), [](const IntermediateValue &a, IntermediateValue &b)
+    std::sort(dataVector.begin(), dataVector.end(), [](const IntermediateValue &a, const IntermediateValue &b)
               { return a.timestamp < b.timestamp; });
 
     // Update current states based on stimuli data at the given timestamp
@@ -365,35 +365,52 @@ void CircuitReader::compute_circuit(int timestamp) // A function that computes t
     {
         if (gatee.output.empty())
         {
-            continue; // Skip gates without output (if any)
+            continue; // Skip gates without output
         }
 
         vector<bool> inputss;
         for (const auto &inputName : gatee.inputs)
         {
-            // Lookup the value of each input in the current states
             auto it = currentStates.find(inputName);
-            // auto it2 = find(inputs.begin(), inputs.end(), inputName);
-            // auto it3 = find(gatee.begin(), inputs.end(), inputName);
             if (it != currentStates.end())
             {
                 inputss.push_back(it->second);
             }
             else
             {
-                // terminate();
-                // Handle the missing input variable as needed
-                // For simplicity, you can choose to skip this gate or set its output to a default value
+                cerr << "Error: Input variable " << inputName << " not found." << endl;
                 inputss.push_back(false); // Default value
             }
         }
 
-        // Evaluate the gate output using getOutput function
-        bool gateOutput = getOutput(inputss, gatee.type);
+        if (timestamp != 0)
+        {
+            // Evaluate the gate output using getOutput function
+            bool gateOutput = getOutput(inputss, gatee.type);
 
-        // Update the current state with the gate's output
-        currentStates[gatee.output] = gateOutput;
-        intermediateValues.push_back(IntermediateValue(timestamp + gatee.delayofgate, gatee.output, gateOutput));
+            // Update the current state with the gate's output
+            currentStates[gatee.output] = gateOutput;
+
+            // Check if the timestamp is greater than 0 and update the previous value
+
+            bool previousValue = getPreviousValue(gatee.output);
+            if (gateOutput != previousValue)
+            {
+                // Output this value only if it's different from the previous value
+                intermediateValues.push_back(IntermediateValue(timestamp + gatee.delayofgate, gatee.output, gateOutput));
+                // Update the previous value to the current value
+                updatePreviousValue(gatee.output, gateOutput);
+            }
+        }
+        else
+        {
+            // Evaluate the gate output using getOutput function
+            bool gateOutput = getOutput(inputss, gatee.type);
+            // Update the current state with the gate's output
+            currentStates[gatee.output] = gateOutput;
+            intermediateValues.push_back(IntermediateValue(timestamp + gatee.delayofgate, gatee.output, gateOutput));
+            updatePreviousValue(gatee.output, gateOutput);
+        }
     }
 }
 void CircuitReader::SimulateProgram(string pathname)
