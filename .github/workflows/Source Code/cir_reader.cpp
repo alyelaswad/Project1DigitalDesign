@@ -9,7 +9,9 @@
 #include <queue>
 #include <set>
 #include <unordered_set>
-
+bool isNotSpace(char ch) {
+    return (ch != ' ');
+}
 bool isOutputOfPreviousGate(string output, vector<gate>& previousGates) 
 {
     for (const auto& gate : previousGates) {
@@ -202,14 +204,20 @@ void CircuitReader::accessCirFile(std::string pathname)
             continue;          // goes to the next iteration, ignoring the loop body
         else
         {
-            inputs.push_back(line[0]+convert); // Storing the inputs
-            convert="";
+            for (int i = 0; i < line.length(); i++)
+        {
+            if (!isNotSpace(line[i])) // removes the spaces which might affect results
+            {
+                line.erase(i, 1);
+            }
+        }
+            inputs.push_back(line); // Storing the inputs
         }
     }
 
     while (getline(cir_file, line)) // reading the gate description
     {
-        if (line == "COMPONENTS:") // we ignore the lines were COMPONENTS is written
+        if (line == "COMPONENTS:") // we ignore the lines where COMPONENTS is written
                                    // as it does not add any value to the data
             continue;
 
@@ -246,14 +254,25 @@ void CircuitReader::accessCirFile(std::string pathname)
 
         string output;
         getline(ss, output, ','); // Reading the outputs
+          for (int i = 0; i < output.length(); i++)
+        {
+            if (!isNotSpace(output[i])) // removes the spaces which might affect results
+            {
+                output.erase(i, 1);
+            }
+        }
         gate_i.output = output;
         // For example, if the gate is NAND2, then it has 2 inouts, etc...
         string name1;
         while (getline(ss, name1, ','))
         {
-            size_t endpos = name1.find_last_not_of(" \t");
-            if (endpos != std::string::npos) 
-            name1 = name1.substr(0, endpos + 1);
+         for (int i = 0; i < name1.length(); i++)
+        {
+            if (!isNotSpace(name1[i])) // removes the spaces which might affect results
+            {
+                name1.erase(i, 1);
+            }
+        }
             gate_i.inputs.push_back(name1); // Reading the inputs
         }
 
@@ -284,7 +303,7 @@ void CircuitReader::accessCirFile(std::string pathname)
 
     for (const auto& gate : cir_gates) 
     {
-        for (const auto& input : gate.inputs) 
+        for ( string input : gate.inputs) 
         {
             if (inputSet.find(input) == inputSet.end() && !isOutputOfPreviousGate(input, cir_gates)) 
             {
@@ -336,6 +355,13 @@ void CircuitReader::accessStimFile(string pathname) // A function that reads Sti
             temp.timestamp = stoi(parcer);
 
             getline(ss, parcer, ',');
+             for (int i = 0; i < parcer.length(); i++)
+            {
+            if (!isNotSpace(parcer[i])) // removes the spaces which might affect results
+            {
+                parcer.erase(i, 1);
+            }
+            }
             temp.variable = parcer;
 
             getline(ss, parcer, ',');

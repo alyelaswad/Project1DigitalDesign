@@ -36,7 +36,7 @@ int main()
     //     cout << "Could not read stimuli file, please recheck the path.\n";
     //     return 1;
     // }
-    circuit.accessStimFile("circ_3Var.stim");
+    circuit.accessStimFile("1.stim");
     // File.close();
 
     circuit.SimulateProgram("simulation.sim");
