@@ -9,6 +9,7 @@
 #include <queue>
 #include <set>
 #include <unordered_set>
+
 bool isOutputOfPreviousGate(string output, vector<gate>& previousGates) 
 {
     for (const auto& gate : previousGates) {
@@ -407,13 +408,16 @@ void CircuitReader::SimulateProgram(string pathname)
     {
         current_values.push_back(0);
     }
-    int x;
     for(int i=0; i<inputs.size();i++)
     {
-        if(dataVector[i].timestamp==0 && dataVector[i].value==0)
+        if(dataVector[i].timestamp!=0)
         dataVector.insert(dataVector.begin()+i,IntermediateValue(0,inputs[i],0));
     }
-
+    for(int i=0; i<inputs.size();i++)
+    {
+        if(dataVector[i].timestamp==0 && dataVector[i].value==0 && dataVector[i].variable!=inputs[i])
+        dataVector.insert(dataVector.begin()+i,IntermediateValue(0,inputs[i],0));
+    }
     // Process stimuli read by StimfileReader
     for (int i = 0; i < dataVector.size(); i++)
     {
