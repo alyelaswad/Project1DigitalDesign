@@ -410,16 +410,10 @@ void CircuitReader::SimulateProgram(string pathname)
     int x;
     for(int i=0; i<inputs.size();i++)
     {
-        if(dataVector[i].timestamp==0)
-        x++;
+        if(dataVector[i].timestamp==0 && dataVector[i].value==0)
+        dataVector.insert(dataVector.begin()+i,IntermediateValue(0,inputs[i],0));
     }
-    if(x!=inputs.size())
-    {
-        for(int i=0;i<inputs.size();i++)
-        {
-            dataVector.insert(dataVector.begin(),IntermediateValue(0,inputs[i],0));
-        }
-    }
+
     // Process stimuli read by StimfileReader
     for (int i = 0; i < dataVector.size(); i++)
     {
