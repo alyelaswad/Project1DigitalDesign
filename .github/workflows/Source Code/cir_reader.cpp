@@ -302,21 +302,21 @@ void CircuitReader::accessCirFile(std::string pathname)
     }
     cir_file.close(); // Closing the .cir file
     bool inputFound = false;
-    unordered_set<string> inputSet(inputs.begin(), inputs.end());
+    unordered_set<string> inputSet(inputs.begin(), inputs.end()); // The inputs in the .cir file are stored in a set
 
     for (const auto &gate : cir_gates)
     {
-        for (string input : gate.inputs)
+        for (string input : gate.inputs) 
         {
-            if (inputSet.find(input) == inputSet.end() && !isOutputOfPreviousGate(input, cir_gates))
-            {
+            if (inputSet.find(input) == inputSet.end() && !isOutputOfPreviousGate(input, cir_gates)) // We check each output to see if it is 
+            {                                                                                        // in the inputs of the .cir file or if it is an output of a previous gate
                 cout << "One of the inputs of the gates is invalid" << endl;
                 terminate();
             }
         }
     }
 }
-bool CircuitReader::getOutput(std::vector<bool> inputs, std::string gatename)
+bool CircuitReader::getOutput(std::vector<bool> inputs, std::string gatename) // A function that takes the vector of inputs and type of gate and returns the output
 {
     int foundat = -1;
     for (int i = 0; i < gatesdict.size(); i++)
