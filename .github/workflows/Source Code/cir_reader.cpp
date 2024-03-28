@@ -11,26 +11,26 @@
 #include <unordered_set>
 #include <fstream>
 bool isNotSpace(char ch)
-{
+{  //checks if the character is not a space and returns a bool value
     return (ch != ' ');
 }
 bool isOutputOfPreviousGate(string output, vector<gate> &previousGates)
-{
+{ //checks if the output is found in fhe pervious gates and returna a bool value
     for (const auto &gate : previousGates)
-    {
+    { //loops throught the vector of pervious gates and checks if its output is the same output given as a paramter
         if (gate.output == output)
-        {
+        { // if yes it returns true
             return true;
         }
     }
     return false; // Output is not found in previous gates
 }
 bool compare_timestamp(IntermediateValue &a, IntermediateValue &b) // compares the values based on their timestamp
-{
+{ //compare two timestamps and return a bool value
     return a.timestamp < b.timestamp;
 }
 int precedence(char op)
-{
+{ // function to make sure precedence rules are applied
     if (op == '~')
         return 3; // Highest precedence for NOT
     else if (op == '&')
