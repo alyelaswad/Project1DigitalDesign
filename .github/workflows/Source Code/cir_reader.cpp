@@ -47,13 +47,13 @@ bool evaluateexpression(string express)
     stack<bool> operands;
     LogicGates G;
 
-    typedef bool (LogicGates::*BinaryOperation)(bool, bool);
+    typedef bool (LogicGates::*BinaryOperation)(bool, bool); // this will make a member of functions found in class LogicGates
     unordered_map<char, BinaryOperation> binaryOperations = {
         {'&', &LogicGates::AND},
-        {'|', &LogicGates::OR}};
+        {'|', &LogicGates::OR}}; //mapping each gate to its symbol
 
     for (char ch : express)
-    {
+    { //checks what the first letter in expression starts with
         if (ch == '(')
         {
             operators.push(ch);
@@ -82,9 +82,9 @@ bool evaluateexpression(string express)
             operators.pop(); // Pop '('
         }
         else if (ch == '&' || ch == '|' || ch == '~')
-        {
+        { //checks if the character is an operator 
             while (!operators.empty() && precedence(operators.top()) >= precedence(ch))
-            {
+            { //checks precedence and if operators not equal empty
                 char op = operators.top();
                 operators.pop();
                 if (op == '~')
@@ -446,15 +446,15 @@ void CircuitReader::compute_circuit(int timestamp)
         for (int i = 0; i < inputs.size(); ++i)
         {
             const auto &input = inputs[i];
-            vector<bool> temp;
+            vector<bool> temp; // temp to be able to make sure that the vector that the function recieve is focussed on the last output
             if (gatee.output == input)
             {
                 for (int j = 0; j < gatee.inputs.size(); j++)
                 {
-                    temp.push_back(inputss[j]);
+                    temp.push_back(inputss[j]);// this pushes the first bool inputs in the temp vector
                     h = j;
                 }
-                // Run computation for th
+                
                 int z = 0;
                 while (z < 100)
                 { // Limit the loop to 50 iterations
@@ -465,7 +465,7 @@ void CircuitReader::compute_circuit(int timestamp)
                     // Update the current state with the updated output
                     currentStates[gatee.output] = gateOutput;
                     // Replace the first occurrence of gate output in inputs with its value
-                    temp[h] = gateOutput;
+                    temp[h] = gateOutput;// last output is insterted into temp vector so it can be computed after
                     intermediateValues.push_back(IntermediateValue(timestampfloop + gatee.delayofgate, gatee.output, gateOutput));
                     timestampfloop += gatee.delayofgate; // Update timestamp
                 }
@@ -529,7 +529,7 @@ void CircuitReader::SimulateProgram(string pathname)
         uniqueIntermediateValues.insert(intermediateValues[i]);
     }
     ofstream outfile(pathname);
-    // Output intermediate values to console
+    // Output intermediate values to file
     for (const auto &value : uniqueIntermediateValues)
     {
         outfile << value.timestamp << "," << value.variable << "," << value.value << endl;
